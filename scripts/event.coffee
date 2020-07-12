@@ -20,6 +20,11 @@ module.exports = (robot) ->
             return
                
         tweet = null
+        
+        console.log("event_type" + event_type)
+        console.log(req.action)
+        console.log(req.body)
+
         switch event_type
             when 'issues'
                 tweet = tweetForIssues req.body
