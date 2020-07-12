@@ -31,7 +31,7 @@ module.exports = (robot) ->
             # robot.messageRoom '#githubnote', tweet
             # robot.send {}, tweet
 
-            res.writeHead { 'Content-Type': 'text/plain' }
+            res.writeHead 201, { 'Content-Type': 'text/plain' }
             robot.messageRoom '#githubnote', tweet
             res.status(201).send 'created'
         else
