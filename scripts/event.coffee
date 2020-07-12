@@ -29,31 +29,31 @@ module.exports = (robot) ->
         else
             res.status(200).send 'ok'
             
-        isCorrectSignature = (signature, body) ->
-            pairs = signature.split '='
-            digest_method = pairs[0]
-            hmac = crypto.createHmac digest_method, process.env.HUBOT_GITHUB_SECRET
-            hmac.update JSON.stringify(body), 'utf-8'
-            hashed_data = hmac.digest 'hex'
-            generated_signature = [digest_method, hashed_data].join '='
+    isCorrectSignature = (signature, body) ->
+        pairs = signature.split '='
+        digest_method = pairs[0]
+        hmac = crypto.createHmac digest_method, process.env.HUBOT_GITHUB_SECRET
+        hmac.update JSON.stringify(body), 'utf-8'
+        hashed_data = hmac.digest 'hex'
+        generated_signature = [digest_method, hashed_data].join '='
 
-            return signature is generated_signature
+        return signature is generated_signature
 
-        tweetForPullRequest = (json) ->
-            action = json.action
-            pr = json.pull_request
+    tweetForPullRequest = (json) ->
+        action = json.action
+        pr = json.pull_request
 
-            switch action
-                when 'opened'
-                    "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
-                when 'closed'
-                    if pr.merged
-                        "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+        switch action
+            when 'opened'
+                "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
+            when 'closed'
+                if pr.merged
+                    "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
 
-        tweetForIssues = (json) ->
+    tweetForIssues = (json) ->
             action = json.action
             issue = json.issue
-            
+
             switch action
                 when 'opened'
                     "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
