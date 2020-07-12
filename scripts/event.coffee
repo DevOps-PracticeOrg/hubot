@@ -29,7 +29,10 @@ module.exports = (robot) ->
         
         if tweet?
             # robot.messageRoom '#githubnote', tweet
-            robot.send {}, { 'Content-Type': 'text/plain' }, '#githubnote', tweet
+            # robot.send {}, tweet
+
+            res.writeHead { 'Content-Type': 'text/plain' }
+            robot.messageRoom '#githubnote', tweet
             res.status(201).send 'created'
         else
             res.status(200).send 'ok'
@@ -76,8 +79,9 @@ module.exports = (robot) ->
                 comment = json.comment
                 message = "[info][title]#{comment.user.login}さんがIssueコメントしました。[/title]"
                 message +=　"""
+                            issue: #{issue.user.login}さんへ：#{issue.title}
                             url: #{issue.html_url}
-                            issue: #{issue.title}
+                            
                             created_at: #{comment.created_at}:
                             [/info]
                             """
