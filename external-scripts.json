@@ -1,4 +1,5 @@
 [
+  "hubot-deploy-builder",
   "hubot-diagnostics",
   "hubot-help",
   "hubot-heroku-keepalive",
