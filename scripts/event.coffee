@@ -15,7 +15,7 @@ module.exports = (robot) ->
         #     return
         signOk = isCorrectSignature signature, req.body
         
-        if signOk?
+        unless signOk?
             res.status(401).send 'unauthorized'
             return
                
@@ -42,7 +42,8 @@ module.exports = (robot) ->
         hmac.update JSON.stringify(body), 'utf-8'
         hashed_data = hmac.digest 'hex'
         generated_signature = [digest_method, hashed_data].join '='
-        console.log(generated_signature)
+        
+        console.log(signature is generated_signature)
         return signature is generated_signature
 
     tweetForPullRequest = (json) ->
