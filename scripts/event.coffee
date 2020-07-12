@@ -28,11 +28,8 @@ module.exports = (robot) ->
 
         
         if tweet?
-            # robot.messageRoom '#githubnote', tweet
-            # robot.send {}, tweet
-
-            res.writeHead 201, { 'Content-Type': 'text/plain' }
             robot.messageRoom '#githubnote', tweet
+            # robot.send {}, tweet
             res.status(201).send 'created'
         else
             res.status(200).send 'ok'
@@ -51,23 +48,22 @@ module.exports = (robot) ->
     tweetForPullRequest = (json) ->
         action = json.action
         pr = json.pull_request
-        message = null
         switch action
             when 'opened'
-                message = "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
+                return "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
             when 'closed'
                 if pr.merged
-                  message = "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+                  return "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
         
     tweetForIssues = (json) ->
         action = json.action
         issue = json.issue
-        message = null
+
         switch action
             when 'opened'
-                message = "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
+                return "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
             when 'closed'
-                message = "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+                return "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
 
      tweetForIssueComments = (json) ->
         action = json.action
@@ -77,13 +73,11 @@ module.exports = (robot) ->
             when 'created'
                 issue = json.issue
                 comment = json.comment
-                message = "[info][title]#{comment.user.login}さんがIssueコメントしました。[/title]"
-                message +=　"""
-                            issue: #{issue.user.login}さんへ：#{issue.title}
+                message =  """
+                            #{comment.user.login}さんがIssueコメントしました。
+                            #{issue.user.login}さんへ：#{issue.title}
                             url: #{issue.html_url}
-                            
                             created_at: #{comment.created_at}:
-                            [/info]
                             """
         
         return message
