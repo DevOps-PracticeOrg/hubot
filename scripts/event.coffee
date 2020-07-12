@@ -9,10 +9,15 @@ module.exports = (robot) ->
         event_type = req.get 'X-Github-Event'
         signature = req.get 'X-Hub-Signature'
 
-        unless isCorrectSignature signature, req.body?
+        
+
+        signOk = isCorrectSignature signature, req.body
+        
+        unless signOk?
             res.status(401).send 'unauthorized'
             return
                
+        
         tweet = switch event_type
             when 'issues'
                 tweetForIssues req.body
