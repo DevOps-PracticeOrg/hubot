@@ -19,11 +19,15 @@ module.exports = (robot) ->
             res.status(401).send 'unauthorized'
             return
                
-        tweet = switch event_type
-                    when 'issues'
-                        tweetForIssues req.body
-                    when 'pull_request'
-                        tweetForPullRequest req.body
+        tweet = null
+        switch event_type
+            when 'issues'
+                tweet = tweetForIssues req.body
+            when 'pull_request'
+                tweet = tweetForPullRequest req.body
+
+        console.log(tweet)
+
         if tweet?
             robot.send {}, tweet
             res.status(201).send 'created'
@@ -32,10 +36,6 @@ module.exports = (robot) ->
             
     isCorrectSignature = (signature, body) ->
 
-        console.log(signature)
-        console.log(process.env.HUBOT_GITHUB_SECRET)
-        console.log("----------")
-
         pairs = signature.split '='
         digest_method = pairs[0]
         hmac = crypto.createHmac digest_method, process.env.HUBOT_GITHUB_SECRET
@@ -43,7 +43,6 @@ module.exports = (robot) ->
         hashed_data = hmac.digest 'hex'
         generated_signature = [digest_method, hashed_data].join '='
         
-        console.log(signature is generated_signature)
         return signature is generated_signature
 
     tweetForPullRequest = (json) ->
@@ -56,13 +55,16 @@ module.exports = (robot) ->
             when 'closed'
                 if pr.merged
                     "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+        
+        return pr
 
     tweetForIssues = (json) ->
-            action = json.action
-            issue = json.issue
+        action = json.action
+        issue = json.issue
 
-            switch action
-                when 'opened'
-                    "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
-                when 'closed'
-                    "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+        switch action
+            when 'opened'
+                "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
+            when 'closed'
+                "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+        return issue
