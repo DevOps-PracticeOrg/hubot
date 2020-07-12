@@ -26,6 +26,9 @@ module.exports = (robot) ->
             when 'pull_request'
                 tweetForPullRequest req.body
 
+        
+        tweet = JSON.parse tweet
+        console.log tweet?
         console.log tweet
         
         if tweet?
