@@ -5,6 +5,7 @@
   "author": "仲林 孝太朗 <123windam@gmail.com>",
   "description": "A simple helpful robot for your Company",
   "dependencies": {
+    "@octokit/rest": "^18.0.0",
     "cron": "^1.8.2",
     "forever": "^3.0.0",
     "githubot": "^1.0.1",
