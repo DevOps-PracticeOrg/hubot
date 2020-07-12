@@ -30,7 +30,8 @@ module.exports = (robot) ->
         if tweet?
             robot.messageRoom '#githubnote', tweet
             # robot.send {}, tweet
-            res.status(201).send 'created'
+            res.writeHead 201, { 'Content-Type': 'text/plain' }
+            res.send 'created'
         else
             res.status(200).send 'ok'
             
