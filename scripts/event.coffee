@@ -14,6 +14,7 @@ module.exports = (robot) ->
         #     res.status(401).send 'unauthorized'
         #     return
         signOk = isCorrectSignature signature, req.body
+        
         if signOk?
             res.status(401).send 'unauthorized'
             return
@@ -30,6 +31,11 @@ module.exports = (robot) ->
             res.status(200).send 'ok'
             
     isCorrectSignature = (signature, body) ->
+
+        console.log(signature)
+        console.log("----------")
+        console.log(process.env.HUBOT_GITHUB_SECRET)
+
         pairs = signature.split '='
         digest_method = pairs[0]
         hmac = crypto.createHmac digest_method, process.env.HUBOT_GITHUB_SECRET
