@@ -33,8 +33,8 @@ module.exports = (robot) ->
     isCorrectSignature = (signature, body) ->
 
         console.log(signature)
-        console.log("----------")
         console.log(process.env.HUBOT_GITHUB_SECRET)
+        console.log("----------")
 
         pairs = signature.split '='
         digest_method = pairs[0]
@@ -42,7 +42,7 @@ module.exports = (robot) ->
         hmac.update JSON.stringify(body), 'utf-8'
         hashed_data = hmac.digest 'hex'
         generated_signature = [digest_method, hashed_data].join '='
-
+        console.log(generated_signature)
         return signature is generated_signature
 
     tweetForPullRequest = (json) ->
