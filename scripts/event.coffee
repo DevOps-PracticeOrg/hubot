@@ -75,10 +75,11 @@ module.exports = (robot) ->
                 issue = json.issue
                 comment = json.comment
                 message = "[info][title]#{comment.user.login}さんがIssueコメントしました。[/title]"
-                message += """
-                        url: #{issue.html_url}
-                        issue: #{issue.title}
-                        created_at: #{comment.created_at}:
-                        [/info]"""
+                message +=  """
+                            url: #{issue.html_url}
+                            issue: #{issue.title}
+                            created_at: #{comment.created_at}:
+                            [/info]
+                            """
         
         return message
