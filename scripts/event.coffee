@@ -17,22 +17,19 @@ module.exports = (robot) ->
             res.status(401).send 'unauthorized'
             return
                
-        
-        tweet = switch event_type
+        tweet = null
+        switch event_type
             when 'issues'
-                tweetForIssues req.body
+                tweet = tweetForIssues req.body
             when 'issue_comment'
-                tweetForIssueComments req.body
+                tweet = tweetForIssueComments req.body
             when 'pull_request'
-                tweetForPullRequest req.body
+                tweet = tweetForPullRequest req.body
 
         
-        tweet = JSON.parse tweet
-        console.log tweet?
-        console.log tweet
-        
         if tweet?
-            robot.send {}, tweet
+            robot.messageRoom '#githubnote', tweet
+            # robot.send {}, tweet
             res.status(201).send 'created'
         else
             res.status(200).send 'ok'
@@ -51,23 +48,23 @@ module.exports = (robot) ->
     tweetForPullRequest = (json) ->
         action = json.action
         pr = json.pull_request
-
+        message = null
         switch action
             when 'opened'
-                "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
+                message = "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
             when 'closed'
                 if pr.merged
-                  "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+                  message = "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
         
     tweetForIssues = (json) ->
         action = json.action
         issue = json.issue
-
+        message = null
         switch action
             when 'opened'
-                "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
+                message = "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
             when 'closed'
-                "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+                message = "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
 
      tweetForIssueComments = (json) ->
         action = json.action
