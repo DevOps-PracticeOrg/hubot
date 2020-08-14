@@ -3,7 +3,6 @@
 #
 # Notes:
 # Pull Request, Issueが対象
-# /repos/{owner}/{repo}/teams
 crypto = require 'crypto'
 _ = require 'lodash'
 # test_json = require('../test.json')
@@ -23,14 +22,13 @@ module.exports = (robot) ->
 
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームからをRoomを取得したい
-        #転置インデックスをして、repoから検索できるようにする
 
         Rooms = () ->
-            return inverseObj( {
+            return {
                 App_Laravel7: "#gihunnote",
-                katuoRoom: ["かつおスライスの仕方", "叩き"],
-                maguroRoom: ["ツナ缶の作り方"],
-            })
+                repoName1: ["かつおスライスの仕方", "叩き"],
+                repoName2: ["ツナ缶の作り方"],
+            }
         #================ please set paires of Event and Handler  ==============================
 
 
@@ -237,7 +235,7 @@ module.exports = (robot) ->
             console.log rooms
             repoName  = config.req().body.repository.name
 
-            return if _.has rooms repoName then rooms[repoName] else repoName
+            return if _.has rooms repoName then rooms[repoName] else [repoName]
 
 
         #転置インデックス
@@ -264,6 +262,17 @@ module.exports = (robot) ->
         #         tweet = tweetForPullRequest config.req().body
 
 
+        sendResponse = () ->
+                        
+            if result?
+                room = getRoom()
+                console.log("============room==============")
+                console.log(room)
+                robot.messageRoom room[0], result
+                res.status(201).send 'created'
+            else
+                res.status(200).send 'ok'
+
         #================ main logic ==============================
         try
             console.log "========Main stand up!========="
@@ -271,9 +280,6 @@ module.exports = (robot) ->
             Object.freeze(config)
             console.log("============show config==============")
             console.log(config)
-            
-            getRoom()
-            return
 
             # checkAuth = true
             checkAuth = isCorrectSignature config
@@ -290,14 +296,8 @@ module.exports = (robot) ->
             console.log("============handleEvent show result==============")
             console.log(result)
 
-            if result?
-                room = getRoom()
-                console.log("============room==============")
-                console.log(room)
-                robot.messageRoom room, result
-                res.status(201).send 'created'
-            else
-                res.status(200).send 'ok'
+            sendResponse(result)
+
 
         catch e
             console.log e
