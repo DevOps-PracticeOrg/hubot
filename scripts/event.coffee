@@ -5,7 +5,6 @@
 # Pull Request, Issueが対象
 # /repos/{owner}/{repo}/teams
 crypto = require 'crypto'
-github = require('githubot')
 
 module.exports = (robot) ->
 
