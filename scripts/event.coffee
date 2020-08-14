@@ -7,137 +7,151 @@
 crypto = require 'crypto'
 _ = require 'lodash'
 
-ORG = process.env.ORGANIZATION_NAME
+ORG = if process.env.ORGANIZATION_NAME then process.env.ORGANIZATION_NAME else "test"
 QUERY_PARAM = "room"
 GITHUB_LISTEN = "/github/#{ORG}/:#{QUERY_PARAM}"
 
+opened = "opened"
+closed = "closed"
+created = "created"
+
 module.exports = (robot) ->
-
-    #================ please set below  ==============================
-    execute_obj_list = createExecuteObjList(
-        setEvent('eventName')('funcName'),
-        setEvent('eventName', "actionName")('funcName'),
-        setEvent('pull_request', ['opened', "closed"])(tweetForPullRequest),
-        setEvent('issues', ['opened', "closed"])(tweetForIssues)
-        setEvent('issue_comment', "created")(tweetForIssueComments)
-    )
-
-    tweetForPullRequest = (reqBody) ->
-        action = reqBody.action
-        pr = reqBody.pull_request
-        return {
-            opened: "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}",
-            closed: "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
-        }
-        
-    tweetForIssues = (reqBody) ->
-        action = reqBody.action
-        issue = reqBody.issue
-        return {
-            opened: "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}",
-            closed: "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
-        }
-
-
-    tweetForIssueComments = (reqBody) ->
-        action = reqBody.action
-        issue = reqBody.issue
-        comment = reqBody.comment
-
-        message =  """
-                    #{comment.user.login}さんがIssueコメントしました。
-                    #{issue.user.login}さんへ：#{issue.title}
-                    url: #{issue.html_url}
-                    created_at: #{comment.created_at}:
-                    """
-
-        return {
-            created: message
-
-        }
-
-    IssueComments = (json) ->
-        action = json.action
-        message = null
-
-        switch action
-            when 'created'
-                issue = json.issue
-                comment = json.comment
-                message =  """
-                            #{comment.user.login}さんがIssueコメントしました。
-                            #{issue.user.login}さんへ：#{issue.title}
-                            url: #{issue.html_url}
-                            created_at: #{comment.created_at}:
-                            """
-        return message
-
-
-    #================ Don't touch all below here ==============================
-
-    
-    eventGenerate = () ->
-        return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
-
-            #execute_obj_listで設定した、funcの実行部分
-            emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
-                result = func(data)
-                message = null
-
-                unless action?
-                    message = result.default
-                else
-                    message = result.action
-                
-                return message
-            
-            return emitEvent
-
-    createExecuteObjlist = (data) ->
-        event_generate = eventGenerate()
-        set_obj_list = _.tail(arguments)#setEventの配列
-
-        obj = {}
-        return _.reduce(
-            set_obj_list,
-            (target, set_event) ->
-                return set_event(target, event_generate)
-            ,
-            obj
-        )
-        return obj
-
-    setEvent = (event, actionList = null) ->
-        return (func) ->
-            return (obj = {}, event_generate = _.indentity) ->
-                obj[event]['actions'] = null
-
-                unless actionList?
-                    obj[event]['func'] = event_generate(func)
-                else
-                    actionList = if _.isArray actionList then actionList else _.toArray actionList
-                    obj[event]['func'] = event_generate(func)
-                    obj[event]['actions'] = actionList
-
-                return obj
-                # return {
-                #     eventName1: {
-                #         actions: null
-                #         func: message(IssueComments),
-                #     },
-                #     eventName2: {
-                #         actions: [open, close]
-                #         func: message(IssueComments),
-                #     }
-                # }
-
-
     robot.router.post GITHUB_LISTEN, (request, res) ->
 
-        main()
+        #================ please set teams, repos and chat rooms =============================
+        #レポジトリネームをクエリで受け取る→Roomに変換
+        #転置インデックスをして、repoから検索できるようにする
+        Rooms = () ->
+            return inverseObj( {
+                roomName: "repo1",
+                katuoRoom: ["かつおスライスの仕方", "叩き"],
+                maguroRoom: ["ツナ缶の作り方"],
+            })
+             
+        #================ please set paires of Event and Handler  ==============================
+        execute_obj_list = createExecuteObjList(
+            setEvent('eventName')('funcName'),
+            setEvent('eventName', "actionName")('funcName'),
+            setEvent('pull_request', [opened, closed])(tweetForPullRequest),
+            setEvent('issues', [opened, closed])(tweetForIssues)
+            setEvent(issue_comment, created)(tweetForIssueComments)
+        )
+
+        tweetForPullRequest = (reqBody) ->
+            action = reqBody.action
+            pr = reqBody.pull_request
+            return {
+                opened: "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}",
+                closed: "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+            }
+            
+        tweetForIssues = (reqBody) ->
+            action = reqBody.action
+            issue = reqBody.issue
+            return {
+                opened: "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}",
+                closed: "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+            }
+
+
+        tweetForIssueComments = (reqBody) ->
+            action = reqBody.action
+            issue = reqBody.issue
+            comment = reqBody.comment
+
+            message =  """
+                        #{comment.user.login}さんがIssueコメントしました。
+                        #{issue.user.login}さんへ：#{issue.title}
+                        url: #{issue.html_url}
+                        created_at: #{comment.created_at}:
+                        """
+
+            return {
+                created: message
+
+            }
+
+        IssueComments = (json) ->
+            action = json.action
+            message = null
+
+            switch action
+                when 'created'
+                    issue = json.issue
+                    comment = json.comment
+                    message =  """
+                                #{comment.user.login}さんがIssueコメントしました。
+                                #{issue.user.login}さんへ：#{issue.title}
+                                url: #{issue.html_url}
+                                created_at: #{comment.created_at}:
+                                """
+            return message
+
+
+        #================ Don't touch all below here ==============================
+
+        #================ set execute_obj_list ==============================
+        eventGenerate = () ->
+            return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
+
+                #execute_obj_listで設定した、funcの実行部分
+                emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
+                    result = func(data)
+                    message = null
+
+                    unless action?
+                        message = result.default
+                    else
+                        message = result.action
+                    
+                    return message
+                
+                return emitEvent
+
+        createExecuteObjlist = (set_obj_list) ->
+            event_generate = eventGenerate()
+
+            return _.reduce(
+                set_obj_list,
+                (target, set_event) ->
+                    return set_event(target, event_generate)
+                ,
+                obj
+            )
+            return obj
+
+        setEvent = (event, actionList = null) ->
+            return (func) ->
+                return (obj = {}, event_generate = _.indentity) ->
+                    obj[event]['actions'] = null
+
+                    unless actionList?
+                        obj[event]['func'] = event_generate(func)
+                    else
+                        checkArray = _.isArray actionList
+                        actionList = if checkArray then actionList else _.toArray actionList
+                        obj[event]['func'] = event_generate(func)
+                        obj[event]['actions'] = actionList
+                    
+                    console.log(obj)
+                    return obj
+                    # return {
+                    #     eventName1: {
+                    #         actions: null
+                    #         func: message(IssueComments),
+                    #     },
+                    #     eventName2: {
+                    #         actions: [open, close]
+                    #         func: message(IssueComments),
+                    #     }
+                    # }
+
 
 
         #================ main logic ==============================
+
+        main()
+
         main = () ->
             config = init(request)
             config.freeze()
@@ -151,7 +165,7 @@ module.exports = (robot) ->
     
             result = handleEvent(execute_obj_list)?
             if result?
-                room = getRoom()
+                room = getRoom()()
                 robot.messageRoom room, result
                 res.status(201).send 'created'
             else
@@ -242,9 +256,30 @@ module.exports = (robot) ->
             #Team : issue PR
 
         getRoom = () ->
-            room  = config.req().params[QUERY_PARAM]
+            repoName  = config.req().params[QUERY_PARAM]
+            rooms = Room()
+
+            targetRoom = if _.has rooms repoName then rooms[repoName] else repoName
+
             return () ->
-                return room
+                return targetRoom
+
+        #転置インデックス
+        inverseObj = (target) ->
+
+            inverseObj = {}
+            key_list = Object.keys(target)
+        
+            for key in key_list
+                values = target[key]
+                value_list = if _.isArray values then values else _.toArray values
+
+                for value in value_list
+                    inverseObj[value] = key
+
+            return inverseObj
+
+
 
         # switch config.event_type()
         #     when 'issues'
