@@ -23,6 +23,7 @@ module.exports = (robot) ->
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームをクエリで受け取る→Roomに変換
         #転置インデックスをして、repoから検索できるようにする
+
         Rooms = () ->
             return inverseObj( {
                 roomName: "repo1",
