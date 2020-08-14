@@ -19,7 +19,7 @@ created = "created"
 module.exports = (robot) ->
 
 
-    robot.router.get GITHUB_LISTEN, (request, res) ->
+    robot.router.post GITHUB_LISTEN, (request, res) ->
 
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームからをRoomを取得したい
