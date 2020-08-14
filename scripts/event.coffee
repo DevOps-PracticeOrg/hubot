@@ -26,7 +26,7 @@ module.exports = (robot) ->
 
         Rooms = () ->
             return inverseObj( {
-                roomName: "repo1",
+                App_Laravel7: "#gihunnote",
                 katuoRoom: ["かつおスライスの仕方", "叩き"],
                 maguroRoom: ["ツナ缶の作り方"],
             })
