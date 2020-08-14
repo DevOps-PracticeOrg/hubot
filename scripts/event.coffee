@@ -3,7 +3,6 @@
 #
 # Notes:
 # Pull Request, Issueが対象
-# /repos/{owner}/{repo}/teams
 crypto = require 'crypto'
 _ = require 'lodash'
 # test_json = require('../test.json')
