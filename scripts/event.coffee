@@ -8,7 +8,6 @@ crypto = require 'crypto'
 github = require('githubot')
 
 module.exports = (robot) ->
-    github = require('githubot')(robot)
 
     robot.router.post "/github/webhook", (req, res) ->
         event_type = req.get 'X-Github-Event'
@@ -16,7 +15,7 @@ module.exports = (robot) ->
 
         signOk = isCorrectSignature signature, req.body
         
-        getTeamListbyrepo()
+        getTeamListbyRepo()
 
         unless signOk?
             res.status(401).send 'unauthorized'
@@ -87,9 +86,14 @@ module.exports = (robot) ->
         
         return message
 
-    getTeamListbyrepo = () ->
-        github.get "https://api.github.com/repos/DevOps-PracticeOrg/hubot/teams", (req, res) ->
-            try
-                console.log res
-            catch e
+    getTeamListbyRepo = () ->
+        console.log "...getTeamListbyRepo"
 
+        robot.http("https://api.github.com/repos/DevOps-PracticeOrg/hubot/teams")
+            .get() (err, res, body) ->
+                try
+                    console.log res
+                    console.log "==========================="
+                    console.log body
+                    console.log "==========================="
+                catch e
