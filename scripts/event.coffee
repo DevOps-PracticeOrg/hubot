@@ -19,18 +19,17 @@ created = "created"
 module.exports = (robot) ->
 
 
-    robot.router.post GITHUB_LISTEN, (request, res) ->
+    robot.router.get GITHUB_LISTEN, (request, res) ->
 
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームからをRoomを取得したい
-        #転置インデックスをして、repoから検索できるようにする
 
         Rooms = () ->
-            return inverseObj( {
+            return {
                 App_Laravel7: "#gihunnote",
-                katuoRoom: ["かつおスライスの仕方", "叩き"],
-                maguroRoom: ["ツナ缶の作り方"],
-            })
+                repoName1: ["かつおスライスの仕方", "叩き"],
+                repoName2: ["ツナ缶の作り方"],
+            }
         #================ please set paires of Event and Handler  ==============================
 
 
@@ -271,9 +270,6 @@ module.exports = (robot) ->
             Object.freeze(config)
             console.log("============show config==============")
             console.log(config)
-            
-            getRoom()
-            return
 
             # checkAuth = true
             checkAuth = isCorrectSignature config
