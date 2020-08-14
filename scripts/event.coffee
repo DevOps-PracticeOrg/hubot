@@ -25,7 +25,7 @@ module.exports = (robot) ->
 
         Rooms = () ->
             return {
-                App_Laravel7: "githubnote",
+                App_Laravel7: ["githubnote"],
                 repoName1: ["かつおスライスの仕方", "叩き"],
                 repoName2: ["ツナ缶の作り方"],
             }
