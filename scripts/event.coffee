@@ -6,7 +6,7 @@
 # /repos/{owner}/{repo}/teams
 crypto = require 'crypto'
 _ = require 'lodash'
-test_json = require('../test.json')
+# test_json = require('../test.json')
 
 ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else "DevOps-PracticeOrg"
 QUERY_PARAM = "room"
@@ -231,7 +231,7 @@ module.exports = (robot) ->
 
 
         getRoom = () ->
-            rooms = Room()
+            rooms = Rooms()
             repoName  = config.req().body.repository.name
             targetRoom = if _.has rooms repoName then rooms[repoName] else repoName
 
