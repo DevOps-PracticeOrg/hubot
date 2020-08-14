@@ -7,61 +7,54 @@
 crypto = require 'crypto'
 _ = require 'lodash'
 
-ORG = "DevOps-PracticeOrg"
+ORG = process.env.ORGANIZATION_NAME
 QUERY_PARAM = "room"
-
 GITHUB_LISTEN = "/github/#{ORG}/:#{QUERY_PARAM}"
-
-config = null
 
 module.exports = (robot) ->
 
-    execute_obj_list = executeObjlist(
+    #================ please set below  ==============================
+    execute_obj_list = createExecuteObjList(
         setEvent('eventName')('funcName'),
         setEvent('eventName', "actionName")('funcName'),
-        setEvent('issues')(tweetForIssues),
-        setEvent('issue_comment', "actionName")(tweetForIssueComments)
-        setEvent('pull_request', "opened")(tweetForPullRequest_opened)
-        setEvent('pull_request', "closed")(tweetForPullRequest_closed)
+        setEvent('pull_request', ['opened', "closed"])(tweetForPullRequest),
+        setEvent('issues', ['opened', "closed"])(tweetForIssues)
+        setEvent('issue_comment', "created")(tweetForIssueComments)
     )
 
-    tweetForPullRequest_opened = (json) ->
-        action = json.action
-        pr = json.pull_request
-        return "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}"
+    tweetForPullRequest = (reqBody) ->
+        action = reqBody.action
+        pr = reqBody.pull_request
+        return {
+            opened: "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}",
+            closed: "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+        }
         
-    tweetForPullRequest_closed = (json) ->
-        action = json.action
-        pr = json.pull_request
-        if pr.merged
-            return "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
+    tweetForIssues = (reqBody) ->
+        action = reqBody.action
+        issue = reqBody.issue
+        return {
+            opened: "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}",
+            closed: "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+        }
 
-    tweetForIssues = (json) ->
-        action = json.action
-        issue = json.issue
 
-        switch action
-            when 'opened'
-                return "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}"
-            when 'closed'
-                return "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
+    tweetForIssueComments = (reqBody) ->
+        action = reqBody.action
+        issue = reqBody.issue
+        comment = reqBody.comment
 
-    tweetForIssueComments = (json) ->
-        action = json.action
-        message = null
+        message =  """
+                    #{comment.user.login}さんがIssueコメントしました。
+                    #{issue.user.login}さんへ：#{issue.title}
+                    url: #{issue.html_url}
+                    created_at: #{comment.created_at}:
+                    """
 
-        switch action
-            when 'created'
-                issue = json.issue
-                comment = json.comment
-                message =  """
-                            #{comment.user.login}さんがIssueコメントしました。
-                            #{issue.user.login}さんへ：#{issue.title}
-                            url: #{issue.html_url}
-                            created_at: #{comment.created_at}:
-                            """
-        
-        return message
+        return {
+            created: message
+
+        }
 
     IssueComments = (json) ->
         action = json.action
@@ -80,66 +73,91 @@ module.exports = (robot) ->
         return message
 
 
-    #================ Don't touch me below ==============================
+    #================ Don't touch all below here ==============================
 
-    createMessage = () ->
-        return (func) ->
-            return (data) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
-                return func(data)
+    
+    eventGenerate = () ->
+        return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
 
-    executeObjlist = (data) ->
-        message_generate = createMessage()
-        set_obj_list = _.tail(arguments)
+            #execute_obj_listで設定した、funcの実行部分
+            emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
+                result = func(data)
+                message = null
+
+                unless action?
+                    message = result.default
+                else
+                    message = result.action
+                
+                return message
+            
+            return emitEvent
+
+    createExecuteObjlist = (data) ->
+        event_generate = eventGenerate()
+        set_obj_list = _.tail(arguments)#setEventの配列
 
         obj = {}
         return _.reduce(
             set_obj_list,
-            (target, func) ->
-                return func(target, message_generate)
+            (target, set_event) ->
+                return set_event(target, event_generate)
             ,
             obj
         )
         return obj
 
-    setEvent = (event, action = null) ->
-            return (func) ->
-                return (obj = {}, message_generate = _.indentity) ->
-                    unless action?
-                        obj[event] = message_generate(func)
-                    else
-                        obj[event][action] = message_generate(func)
-                    
-                    return obj
-                    # return {
-                    #     issues: message(IssueComments),
-                    #     issue_comment: message(IssueComments),
-                    #     issue_comment2: {
-                    #         open: message(IssueComments),
-                    #         close: message(IssueComments),
-                    #     }
-                    # }
+    setEvent = (event, actionList = null) ->
+        return (func) ->
+            return (obj = {}, event_generate = _.indentity) ->
+                obj[event]['actions'] = null
+
+                unless actionList?
+                    obj[event]['func'] = event_generate(func)
+                else
+                    actionList = if _.isArray actionList then actionList else _.toArray actionList
+                    obj[event]['func'] = event_generate(func)
+                    obj[event]['actions'] = actionList
+
+                return obj
+                # return {
+                #     eventName1: {
+                #         actions: null
+                #         func: message(IssueComments),
+                #     },
+                #     eventName2: {
+                #         actions: [open, close]
+                #         func: message(IssueComments),
+                #     }
+                # }
 
 
     robot.router.post GITHUB_LISTEN, (request, res) ->
 
-        config = init(request)
-        config.freeze()
-        checkAuth = isCorrectSignature config
-        
-        unless checkAuth?
-            res.status(401).send 'unauthorized'
-            return
+        main()
 
-   
-        result = handleEvent(execute_obj_list)?
-        if result?
-            room = getRoom()
-            robot.messageRoom room, result
-            res.status(201).send 'created'
-        else
-            res.status(200).send 'ok'
+
+        #================ main logic ==============================
+        main = () ->
+            config = init(request)
+            config.freeze()
+            
+            checkAuth = isCorrectSignature config
+            
+            unless checkAuth?
+                res.status(401).send 'unauthorized'
+                return
+
     
-
+            result = handleEvent(execute_obj_list)?
+            if result?
+                room = getRoom()
+                robot.messageRoom room, result
+                res.status(201).send 'created'
+            else
+                res.status(200).send 'ok'
+   
+        #================ helper ==============================
         init = (request) ->
             req = _.cloneDeep request
 
@@ -195,22 +213,24 @@ module.exports = (robot) ->
                 resultObj.err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
 
             else
-                setResponseMessage(execute_obj, event)
+                execute(execute_obj[event])
 
             return resultObj
         
-        setResponseMessage = (execute_obj, event) ->
+        #execute_obj_listで
+        execute = (event_obj) ->
             
             action = config.getAction()
-            checkEventAction = _.isObject event && _.has event, action
+            checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
 
             data = config.req().body
 
-            #createMessageの一番内部のfunctionが起動する
-            if checkEventAction
-                result = execute_obj.event.action(data)
+            #eventGenerateの一番内部のemitEventが起動する
+            event_generate = execute_obj.event.func
+            unless checkEventAction?
+                result = emitEvent(data)
             else
-                result = execute_obj.event(data)
+                result = emitEvent(data, action)
 
         pipeLine = () ->
             checkEventType
