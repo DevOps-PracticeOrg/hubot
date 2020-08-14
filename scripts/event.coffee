@@ -236,7 +236,7 @@ module.exports = (robot) ->
             console.log rooms
             repoName  = config.req().body.repository.name
 
-            return if _.has rooms repoName then rooms[repoName] else repoName
+            return if _.has rooms repoName then rooms[repoName] else [repoName]
 
 
         #転置インデックス
@@ -263,6 +263,17 @@ module.exports = (robot) ->
         #         tweet = tweetForPullRequest config.req().body
 
 
+        sendResponse = () ->
+                        
+            if result?
+                room = getRoom()
+                console.log("============room==============")
+                console.log(room)
+                robot.messageRoom room[0], result
+                res.status(201).send 'created'
+            else
+                res.status(200).send 'ok'
+
         #================ main logic ==============================
         try
             console.log "========Main stand up!========="
@@ -286,14 +297,8 @@ module.exports = (robot) ->
             console.log("============handleEvent show result==============")
             console.log(result)
 
-            if result?
-                room = getRoom()
-                console.log("============room==============")
-                console.log(room)
-                robot.messageRoom room, result
-                res.status(201).send 'created'
-            else
-                res.status(200).send 'ok'
+            sendResponse(result)
+
 
         catch e
             console.log e
