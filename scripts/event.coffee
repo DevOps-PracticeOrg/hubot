@@ -268,7 +268,7 @@ module.exports = (robot) ->
                 room = getRoom()
                 console.log("============room==============")
                 console.log(room)
-                robot.messageRoom room[0], result
+                robot.messageRoom "#" + room[0], result
                 res.status(201).send 'created'
             else
                 res.status(200).send 'ok'
