@@ -88,7 +88,7 @@ module.exports = (robot) ->
     getTeamListbyRepo = () ->
         console.log "...getTeamListbyRepo"
 
-        robot.http("https://api.github.com/repos/DevOps-PracticeOrg/hubot/teams")
+        robot.http("https://api.github.com/repos/DevOps-PracticeOrg/App_Laravel7/teams")
             .get() (err, res, body) ->
                 try
                     console.log res
