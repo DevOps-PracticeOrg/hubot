@@ -149,23 +149,31 @@ module.exports = (robot) ->
 
 
         #================ main logic ==============================
-
-        main()
+        try
+            console.log "========Main stand up!========="
+            main()
+        catch e
+            console.log
 
         main = () ->
             config = init(request)
             config.freeze()
-            
+            console.log("============show config==============")
+            console.log(config)
             checkAuth = isCorrectSignature config
             
+            console.log("============checkAuth #{checkAuth}==============")
             unless checkAuth?
                 res.status(401).send 'unauthorized'
                 return
-
-    
+            console.log("============handleEvent start!==============")
             result = handleEvent(execute_obj_list)?
+            console.log("============handleEvent result==============")
+            console.log(result)
             if result?
                 room = getRoom()()
+                console.log("============room==============")
+                console.log(room)
                 robot.messageRoom room, result
                 res.status(201).send 'created'
             else
