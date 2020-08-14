@@ -3,16 +3,21 @@
 #
 # Notes:
 # Pull Request, Issueが対象
+# /repos/{owner}/{repo}/teams
 crypto = require 'crypto'
+github = require('githubot')
+
 module.exports = (robot) ->
+    github = require('githubot')(robot)
+
     robot.router.post "/github/webhook", (req, res) ->
         event_type = req.get 'X-Github-Event'
         signature = req.get 'X-Hub-Signature'
 
-        
-
         signOk = isCorrectSignature signature, req.body
         
+        getTeamListbyrepo()
+
         unless signOk?
             res.status(401).send 'unauthorized'
             return
@@ -81,3 +86,10 @@ module.exports = (robot) ->
                             """
         
         return message
+
+    getTeamListbyrepo = () ->
+        github.get "https://api.github.com/repos/DevOps-PracticeOrg/hubot/teams", (req, res) ->
+            try
+                console.log res
+            catch e
+
