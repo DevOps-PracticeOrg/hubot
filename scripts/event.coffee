@@ -18,8 +18,8 @@ created = "created"
 module.exports = (robot) ->
 
 
-    robot.router.post GITHUB_LISTEN, (request, res) ->
-
+    robot.router.get GITHUB_LISTEN, (request, res) ->
+ 
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームからをRoomを取得したい
 
@@ -196,14 +196,14 @@ module.exports = (robot) ->
             unless checkEvent?
                 return resultObj.err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
             else
-                execute(execute_obj[event])
+                return execute(execute_obj[event])
                 # return execute(execute_obj['issues'])
 
 
         #execute_obj_listで
         execute = (event_obj) ->
             console.log("============execute start!==============")
-   
+
             action = config.action()
             # checkEventAction = true
             checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
@@ -231,10 +231,10 @@ module.exports = (robot) ->
 
         getRoom = () ->
             rooms_list = Rooms()
-            console.log "=== rooms ==="
+            console.log "=== rooms_list ==="
             console.log rooms_list
             repoName  = config.req().body.repository.name
-
+            # repoName = "App_Laravel7"
             return rooms_list[repoName]
 
 
@@ -253,22 +253,14 @@ module.exports = (robot) ->
 
             return inverseObj
 
-        # switch config.event_type()
-        #     when 'issues'
-        #         tweet = tweetForIssues config.req().body
-        #     when 'issue_comment'
-        #         tweet = tweetForIssueComments config.req().body
-        #     when 'pull_request'
-        #         tweet = tweetForPullRequest config.req().body
+        sendResponse = (result, pre_fix = "#") ->
 
-
-        sendResponse = () ->
-                        
             if result?
                 room = getRoom()
                 console.log("============room==============")
-                console.log(room)
-                robot.messageRoom "#" + room[0], result
+                roomName = pre_fix + room[0]
+                console.log roomName
+                robot.messageRoom roomName, result
                 res.status(201).send 'created'
             else
                 res.status(200).send 'ok'
