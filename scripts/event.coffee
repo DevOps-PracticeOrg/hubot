@@ -230,12 +230,12 @@ module.exports = (robot) ->
 
 
         getRoom = () ->
-            rooms = Rooms()
+            rooms_list = Rooms()
             console.log "=== rooms ==="
-            console.log rooms
+            console.log rooms_list
             repoName  = config.req().body.repository.name
 
-            return if _.has rooms repoName then rooms[repoName] else [repoName]
+            return rooms_list[repoName]
 
 
         #転置インデックス
