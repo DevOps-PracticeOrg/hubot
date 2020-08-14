@@ -18,10 +18,11 @@ created = "created"
 
 module.exports = (robot) ->
 
+
     robot.router.post GITHUB_LISTEN, (request, res) ->
 
         #================ please set teams, repos and chat rooms =============================
-        #レポジトリネームをクエリで受け取る→Roomに変換
+        #レポジトリネームからをRoomを取得したい
         #転置インデックスをして、repoから検索できるようにする
 
         Rooms = () ->
@@ -232,11 +233,11 @@ module.exports = (robot) ->
 
         getRoom = () ->
             rooms = Rooms()
+            console.log "=== rooms ==="
+            console.log rooms
             repoName  = config.req().body.repository.name
-            targetRoom = if _.has rooms repoName then rooms[repoName] else repoName
 
-            return () ->
-                return targetRoom
+            return if _.has rooms repoName then rooms[repoName] else repoName
 
 
         #転置インデックス
@@ -270,6 +271,10 @@ module.exports = (robot) ->
             Object.freeze(config)
             console.log("============show config==============")
             console.log(config)
+            
+            getRoom()
+            return
+
             # checkAuth = true
             checkAuth = isCorrectSignature config
             
@@ -286,7 +291,7 @@ module.exports = (robot) ->
             console.log(result)
 
             if result?
-                room = getRoom()()
+                room = getRoom()
                 console.log("============room==============")
                 console.log(room)
                 robot.messageRoom room, result
