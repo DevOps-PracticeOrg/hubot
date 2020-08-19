@@ -4,22 +4,17 @@
 # Notes:
 crypto = require 'crypto'
 _ = require 'lodash'
+ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else null
+unless ORG
+  res.status(400).send "エラーです"
+
+GITHUB_LISTEN = "/github/#{ORG}"
 
 module.exports = (robot) ->
 
   robot.router.post GITHUB_LISTEN, (request, res) ->
 
     #================ 初期設定 =============================
-    config = null
-
-
-
-    ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else null
-    unless ORG
-      res.status(400).send "エラーです"
-
-
-    GITHUB_LISTEN = "/github/#{ORG}"
 
     #実装済みイベント
     imple_event_list = () ->
@@ -64,8 +59,8 @@ module.exports = (robot) ->
       pr = reqBody.pull_request
       return {
           default: "test",
-          opened: "#{pr.user.login}さんからPull Requestをもらいました",
-          closed: "#{pr.user.login}さんのPull Requestをマージしました"
+          opened: "#{pr.user.login}さんからPull Requestをもらいました。",
+          closed: "#{pr.user.login}さんのPull Requestをマージしました。"
       }
 
 
@@ -73,8 +68,8 @@ module.exports = (robot) ->
       issue = reqBody.issue
       return {
           default: "test",
-          opened: "#{issue.user.login}さんがIssueを上げました",
-          closed: "#{issue.user.login}さんのIssueがcloseされました"
+          opened: "#{issue.user.login}さんがIssueを上げました。",
+          closed: "#{issue.user.login}さんのIssueがcloseされました。"
       }
 
 
@@ -94,9 +89,9 @@ module.exports = (robot) ->
       }
 
 
-      #================ Don't touch all below here ==============================
-
-      #================ set execute_obj_list ==============================
+    #================ Don't touch all below here ==============================
+    config = null
+    #================ set execute_obj_list ==============================
     eventGenerate = () ->
       return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
 
