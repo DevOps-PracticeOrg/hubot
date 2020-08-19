@@ -63,10 +63,16 @@ module.exports = (robot) ->
 
     tweetAboutPullRequest = (reqBody) ->
       pr = reqBody.pull_request
+
+      message = (text) ->
+        return () -> """
+          "#{pr.user.login}さんがPull Requestを#{text}しました。",
+          """
+
       return {
-          default: "test",
-          opened: "#{pr.user.login}さんからPull Requestをもらいました。",
-          closed: "#{pr.user.login}さんのPull Requestをマージしました。"
+        default: defaultMessage(),
+        opened: message("opened"),
+        closed: message("closed")
       }
 
 
@@ -99,15 +105,17 @@ module.exports = (robot) ->
       issue = reqBody.issue
       comment = reqBody.comment
 
-      message =  """
+      message = (text) ->
+        return () ->
+          return  """
                   #{comment.user.login}さんがIssueコメントしました。
                   #{issue.user.login}さんへ：#{issue.title}
                   url: #{issue.html_url}
                   created_at: #{comment.created_at}:
                   """
       return {
-          default: "test",
-          created: message
+          default: defaultMessage(),
+          created: message("created")
       }
 
 
@@ -128,9 +136,15 @@ module.exports = (robot) ->
           message = null
 
           unless action?
-              message = result['default']()
+            message = result['default']()
           else
-              message = result[action]()
+            event_func = result[action]
+
+            if event_func == undefined
+              sendErrorResponse("#{action}：対応するアクションが未定義です。")()
+            else
+              message = event_func()
+
 
           console.log("==== response message =====")
           console.log(message)
@@ -293,7 +307,11 @@ module.exports = (robot) ->
 
     sendErrorResponse = (e = null) ->
       console.log e
-      res.status(400).send "エラーです"
+      return (func = null) ->
+        unless func
+          res.status(400).send "エラーです"
+        else
+          func()
 
     #================ main logic ==============================
     try
@@ -319,4 +337,4 @@ module.exports = (robot) ->
       sendResponse(result)
 
     catch e
-      sendErrorResponse(e)
+      sendErrorResponse(e)()
