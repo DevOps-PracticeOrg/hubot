@@ -75,7 +75,7 @@ module.exports = (robot) ->
 
       console.log("assignees")
       for i in [0..Object.keys(assignees).length]
-        console.log(assignees[i].login)
+        console.log(assignees[i])
 
       message = (text) ->
         return () ->
