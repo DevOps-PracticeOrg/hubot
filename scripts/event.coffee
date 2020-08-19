@@ -54,6 +54,12 @@ module.exports = (robot) ->
       ]
 
     #================ please set paires of Event and Handler  ==============================
+    getDefaultMessage = (func = null) ->
+      return () ->
+        unless func
+          return "default"
+        else
+          return func()
 
     tweetAboutPullRequest = (reqBody) ->
       pr = reqBody.pull_request
@@ -66,10 +72,25 @@ module.exports = (robot) ->
 
     tweetAboutIssues = (reqBody) ->
       issue = reqBody.issue
+      assignees = issue.assignees
+
+      message = (text) ->
+        return () ->
+          """
+          #{issue.url}
+          @#{issue.user.login}さんがIssueを#{text}を上げました。
+          assignees
+          #{
+            for i = 0; i < Object.keys(assignees).length; ++i
+              "@"+ assignees[i]login
+          }
+          created_at: #{comment.created_at}
+          """
+
       return {
-          default: "test",
-          opened: "#{issue.user.login}さんがIssueを上げました。",
-          closed: "#{issue.user.login}さんのIssueがcloseされました。"
+          default: getDefaultMessage(),
+          opened: message("opened"),
+          closed: message("closed")
       }
 
 
@@ -95,26 +116,26 @@ module.exports = (robot) ->
     eventGenerate = () ->
       return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
 
-          #execute_obj_listで設定した、funcの実行部分
-          emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
-              result = func(data)
+        #execute_obj_listで設定した、funcの実行部分
+        emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
+          result = func(data)
 
-              console.log("==== emitEvent result =====")
-              console.log(result)
-              console.log("==== emitEvent action =====")
-              console.log(action)
-              message = null
+          console.log("==== emitEvent result =====")
+          console.log(result)
+          console.log("==== emitEvent action =====")
+          console.log(action)
+          message = null
 
-              unless action?
-                  message = result['default']
-              else
-                  message = result[action]
+          unless action?
+              message = result['default']()
+          else
+              message = result[action]()
 
-              console.log("==== response message =====")
-              console.log(message)
-              return message
+          console.log("==== response message =====")
+          console.log(message)
+          return message
 
-          return emitEvent
+        return emitEvent
 
 
     execute_obj_list = (func) ->
@@ -136,59 +157,59 @@ module.exports = (robot) ->
 
 
     setEvent = (event, actionList = null) ->
-        return (func) ->
-            return (obj = {}, event_generate = _.indentity) ->
-                obj[event] = {}
-                obj[event]['actions'] = null
+      return (func) ->
+        return (obj = {}, event_generate = _.indentity) ->
+          obj[event] = {}
+          obj[event]['actions'] = null
 
-                unless actionList?
-                    obj[event]['func'] = event_generate(func)
-                else
-                    checkArray = _.isArray actionList
-                    actionList = if checkArray then actionList else [actionList]
-                    obj[event]['func'] = event_generate(func)
-                    obj[event]['actions'] = actionList
+          unless actionList?
+              obj[event]['func'] = event_generate(func)
+          else
+              checkArray = _.isArray actionList
+              actionList = if checkArray then actionList else [actionList]
+              obj[event]['func'] = event_generate(func)
+              obj[event]['actions'] = actionList
 
-                return obj
-                # return {
-                #     eventName1: {
-                #         actions: null
-                #         func: message(IssueComments),
-                #     },
-                #     eventName2: {
-                #         actions: [open, close]
-                #         func: message(IssueComments),
-                #     }
-                # }
+          return obj
+          # return {
+          #     eventName1: {
+          #         actions: null
+          #         func: message(IssueComments),
+          #     },
+          #     eventName2: {
+          #         actions: [open, close]
+          #         func: message(IssueComments),
+          #     }
+          # }
 
 
     #================ Methos ==============================
     init = (request) ->
       req = _.cloneDeep request
       getRequest = () ->
-          return () ->
-              return req
+        return () ->
+            return req
 
       getAction = () ->
-          return () ->
-              return req.body.action
+        return () ->
+            return req.body.action
 
       getSignature = () ->
-          signature = req.get 'X-Hub-Signature'
-          return () ->
-              return signature
+        signature = req.get 'X-Hub-Signature'
+        return () ->
+            return signature
 
       getEventType = () ->
-          event_type = req.get 'X-Github-Event'
-          return () ->
-              return event_type
+        event_type = req.get 'X-Github-Event'
+        return () ->
+          return event_type
 
       obj =  {
-          #valueは全てfunc型
-          req: getRequest(),
-          action: getAction(),
-          signature: getSignature(),
-          event_type: getEventType(),
+        #valueは全てfunc型
+        req: getRequest(),
+        action: getAction(),
+        signature: getSignature(),
+        event_type: getEventType(),
       }
 
       return obj
@@ -260,14 +281,14 @@ module.exports = (robot) ->
 
     sendResponse = (result, pre_fix = "#") ->
       if result?
-          room = getRoom()
-          console.log("============room==============")
-          roomName = pre_fix + room[0]
-          console.log roomName
-          robot.messageRoom roomName, result
-          res.status(201).send config.action()
+        room = getRoom()
+        console.log("============room==============")
+        roomName = pre_fix + room[0]
+        console.log roomName
+        robot.messageRoom roomName, result
+        res.status(201).send config.action()
       else
-          res.status(200).send 'ok'
+        res.status(200).send 'ok'
 
     sendErrorResponse = (e = null) ->
       console.log e
