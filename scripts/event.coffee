@@ -6,8 +6,7 @@ crypto = require 'crypto'
 _ = require 'lodash'
 ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else null
 unless ORG
-  res.status(400).send "エラーです"
-
+  return
 GITHUB_LISTEN = "/github/#{ORG}"
 
 module.exports = (robot) ->
@@ -76,17 +75,16 @@ module.exports = (robot) ->
 
       message = (text) ->
         return () ->
-          """
-          #{issue.url}
-          @#{issue.user.login}さんがIssueを#{text}を上げました。
-          assignees
-          #{
-            for i = 0; i < Object.keys(assignees).length; ++i
-              "@"+ assignees[i]login
-          }
-          created_at: #{comment.created_at}
-          """
-
+          return """
+            #{issue.url}
+            @#{issue.user.login}さんがIssueを#{text}を上げました。
+            assignees
+            #{
+              for i in [0..Object.keys(assignees).length]
+                "@"+ assignees[i].login
+            }
+            created_at: #{comment.created_at}
+            """
       return {
           default: getDefaultMessage(),
           opened: message("opened"),
