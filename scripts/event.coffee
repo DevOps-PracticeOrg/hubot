@@ -212,24 +212,21 @@ module.exports = (robot) ->
 
         #execute_obj_listで
         execute = (event_obj) ->
-            action = config.action()
             console.log("============execute start! with action : #{action}==============")
+            console.log(event_obj)
+            action = config.action()
 
-            # checkEventAction = true
-            checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
+            checkEventAction = _.has event_obj.actions, action
 
-            # data = test_json
             data = config.req().body
 
             #eventGenerateの一番内部のemitEventが起動する
             emitEvent = event_obj.func
             console.log("============checkEventAction: #{checkEventAction}=============")
             unless checkEventAction?
-                console.log("============no action=============")
-                return emitEvent(data)
+              return emitEvent(data)
             else
-                console.log("============action: #{action}=============")
-                return emitEvent(data, action)
+              return emitEvent(data, action)
 
         getRoom = () ->
             rooms_list = Rooms()
