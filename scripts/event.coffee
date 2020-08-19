@@ -63,10 +63,16 @@ module.exports = (robot) ->
 
     tweetAboutPullRequest = (reqBody) ->
       pr = reqBody.pull_request
+
+      message = (text) ->
+        return () -> """
+          "#{pr.user.login}さんがPull Requestを#{text}しました。",
+          """
+
       return {
-          default: "test",
-          opened: "#{pr.user.login}さんからPull Requestをもらいました。",
-          closed: "#{pr.user.login}さんのPull Requestをマージしました。"
+        default: defaultMessage(),
+        opened: message("opened"),
+        closed: message("closed")
       }
 
 
@@ -99,15 +105,17 @@ module.exports = (robot) ->
       issue = reqBody.issue
       comment = reqBody.comment
 
-      message =  """
+      message = (text) ->
+        return () ->
+          return  """
                   #{comment.user.login}さんがIssueコメントしました。
                   #{issue.user.login}さんへ：#{issue.title}
                   url: #{issue.html_url}
                   created_at: #{comment.created_at}:
                   """
       return {
-          default: "test",
-          created: message
+          default: defaultMessage(),
+          created: message("created")
       }
 
 
