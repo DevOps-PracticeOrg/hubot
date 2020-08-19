@@ -74,6 +74,7 @@ module.exports = (robot) ->
       assignees = issue.assignees
 
       console.log("assignees")
+      console.log(assignees)
       for i in [0..Object.keys(assignees).length]
         console.log(assignees[i])
 
@@ -85,7 +86,6 @@ module.exports = (robot) ->
             assignees
             #{
               for i in [0..Object.keys(assignees).length]
-
                 "@"+ assignees[i].login
             }
             created_at: #{comment.created_at}
