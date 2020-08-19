@@ -3,6 +3,7 @@
 #
 # Notes:
 # Pull Request, Issueが対象
+config = null
 crypto = require 'crypto'
 _ = require 'lodash'
 # test_json = require('../test.json')
