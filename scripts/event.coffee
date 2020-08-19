@@ -73,6 +73,10 @@ module.exports = (robot) ->
       issue = reqBody.issue
       assignees = issue.assignees
 
+      console.log("assignees")
+      for i in [0..Object.keys(assignees).length]
+        console.log(assignees[i].login)
+
       message = (text) ->
         return () ->
           return """
@@ -81,6 +85,7 @@ module.exports = (robot) ->
             assignees
             #{
               for i in [0..Object.keys(assignees).length]
+
                 "@"+ assignees[i].login
             }
             created_at: #{comment.created_at}
