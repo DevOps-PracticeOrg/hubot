@@ -46,6 +46,7 @@ module.exports = (robot) ->
         tweetForPullRequest = (reqBody) ->
             pr = reqBody.pull_request
             return {
+                default: "test",
                 opened: "#{pr.user.login}さんからPull Requestをもらいました #{pr.title} #{pr.html_url}",
                 closed: "#{pr.user.login}さんのPull Requestをマージしました #{pr.title} #{pr.html_url}"
             }
@@ -54,6 +55,7 @@ module.exports = (robot) ->
         tweetForIssues = (reqBody) ->
             issue = reqBody.issue
             return {
+                default: "test",
                 opened: "#{issue.user.login}さんがIssueを上げました #{issue.title} #{issue.html_url}",
                 closed: "#{issue.user.login}さんのIssueがcloseされました #{issue.title} #{issue.html_url}"
             }
@@ -70,6 +72,7 @@ module.exports = (robot) ->
                         created_at: #{comment.created_at}:
                         """
             return {
+                default: "test",
                 created: message
             }
 
@@ -91,11 +94,9 @@ module.exports = (robot) ->
                     message = null
 
                     unless action?
-                        message = result.default
+                        message = result['default']
                     else
-                        message = result.action
-
-                    message = if message then "テスト" else message
+                        message = result[action]
 
                     console.log("==== response message =====")
                     console.log(message)
@@ -214,19 +215,13 @@ module.exports = (robot) ->
         execute = (event_obj) ->
             console.log("============execute start! with action : #{action}==============")
             console.log(event_obj)
+
             action = config.action()
-
-            checkEventAction = _.has event_obj.actions, action
-
             data = config.req().body
 
             #eventGenerateの一番内部のemitEventが起動する
             emitEvent = event_obj.func
-            console.log("============checkEventAction: #{checkEventAction}=============")
-            unless checkEventAction?
-              return emitEvent(data)
-            else
-              return emitEvent(data, action)
+            return emitEvent(data, action)
 
         getRoom = () ->
             rooms_list = Rooms()
@@ -283,7 +278,7 @@ module.exports = (robot) ->
             console.log("============execute_obj_list start!==============")
             obj = execute_obj_list(createExecuteObjlist)
             console.log(obj)
-            result = handleEvent(obj)?
+            result = handleEvent(obj)
             console.log("============handleEvent show result==============")
             console.log(result)
 
