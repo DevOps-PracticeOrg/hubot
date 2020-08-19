@@ -225,9 +225,12 @@ module.exports = (robot) ->
 
             #eventGenerateの一番内部のemitEventが起動する
             emitEvent = event_obj.func
+            console.log("============checkEventAction: #{checkEventAction}=============")
             unless checkEventAction?
+                console.log("============no action=============")
                 return emitEvent(data)
             else
+                console.log("============action: #{action}=============")
                 return emitEvent(data, action)
 
 
