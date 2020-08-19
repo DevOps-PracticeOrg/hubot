@@ -34,8 +34,8 @@ module.exports = (robot) ->
       }
 
 
-    #================ please set teams, repos and chat rooms =============================
-    #レポジトリネームからをRoomを取得したい
+    #================ please repos and chat rooms =============================
+    #レポジトリネームからをRoomを取得したい。現時点で、レポジトリからチームリストを取得するAPIがうまく起動しないので妥協
 
     Rooms = () ->
       return {
