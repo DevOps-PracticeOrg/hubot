@@ -128,9 +128,15 @@ module.exports = (robot) ->
           message = null
 
           unless action?
-              message = result['default']()
+            message = result['default']()
           else
-              message = result[action]()
+            event_func = result[action]
+
+            if event_func == undefined
+              sendErrorResponse("#{action}：対応するアクションが未定義です。")()
+            else
+              message = event_func()
+
 
           console.log("==== response message =====")
           console.log(message)
@@ -293,7 +299,11 @@ module.exports = (robot) ->
 
     sendErrorResponse = (e = null) ->
       console.log e
-      res.status(400).send "エラーです"
+      return (func = null) ->
+        unless func
+          res.status(400).send "エラーです"
+        else
+          func()
 
     #================ main logic ==============================
     try
@@ -319,4 +329,4 @@ module.exports = (robot) ->
       sendResponse(result)
 
     catch e
-      sendErrorResponse(e)
+      sendErrorResponse(e)()
