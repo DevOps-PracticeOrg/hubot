@@ -202,7 +202,7 @@ module.exports = (robot) ->
                 err_msg: {},
                 message: null,
             }
-
+            console.log("============event type : #{config.event_type()}==============")
             event = config.event_type()
             checkEvent = _.has execute_obj, event
 
