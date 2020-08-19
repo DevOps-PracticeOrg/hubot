@@ -217,9 +217,11 @@ module.exports = (robot) ->
           err_msg: {},
           message: null,
       }
-      console.log("============event type : #{config.event_type()}==============")
+
       event = config.event_type()
-      checkEvent = _.has execute_obj, event
+      checkEvent = execute_obj[event]
+      console.log("============event==============")
+      console.log( execute_obj[event])
 
       unless checkEvent?
           return resultObj.err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
