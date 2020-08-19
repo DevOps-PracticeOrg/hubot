@@ -61,6 +61,9 @@ module.exports = (robot) ->
         else
           return func()
 
+    responseMessage = (func) ->
+      return func
+
     tweetAboutPullRequest = (reqBody) ->
       pr = reqBody.pull_request
 
@@ -78,18 +81,16 @@ module.exports = (robot) ->
 
     tweetAboutIssues = (reqBody) ->
       issue = reqBody.issue
-      assignees = issue.assignees
+      assignees = ""
+      for i in [0..Object.keys(issue.assignees).length]
+        assignees +=  "@" +  assignees[i]['login'] + " "
 
       message = (text) ->
         return () ->
           return """
             #{issue.url}
             @#{issue.user.login}さんがIssueを#{text}しました。
-            assignees
-            #{
-              for i in [0..Object.keys(assignees).length]
-                "@"+ assignees[i]['login']
-            }
+            #{assignees}
             created_at: #{comment.created_at}
             """
 
