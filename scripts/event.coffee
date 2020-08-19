@@ -8,9 +8,14 @@ _ = require 'lodash'
 # test_json = require('../test.json')
 
 ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else "DevOps-PracticeOrg"
-QUERY_PARAM = "room"
 GITHUB_LISTEN = "/github/#{ORG}"
 
+#実装済みイベント
+pull_request = "pull_request"
+issues = "issues"
+issue_comment = "issue_comment"
+
+#実装済みアクション
 opened = "opened"
 closed = "closed"
 created = "created"
@@ -29,16 +34,15 @@ module.exports = (robot) ->
                 repoName1: ["かつおスライスの仕方", "叩き"],
                 repoName2: ["ツナ缶の作り方"],
             }
-        #================ please set paires of Event and Handler  ==============================
-
-
+        
         event_list = () ->
             return [
-                setEvent('pull_request', [opened, closed])(tweetForPullRequest),
-                setEvent('issues', [opened, closed])(tweetForIssues)
-                setEvent('issue_comment', created)(tweetForIssueComments)
+                setEvent(pull_request, [opened, closed])(tweetForPullRequest),
+                setEvent(issues, [opened, closed])(tweetForIssues)
+                setEvent(issue_comment, created)(tweetForIssueComments)
             ]
 
+        #================ please set paires of Event and Handler  ==============================
 
         tweetForPullRequest = (reqBody) ->
             pr = reqBody.pull_request
@@ -68,7 +72,6 @@ module.exports = (robot) ->
                         """
             return {
                 created: message
-
             }
 
 
@@ -88,6 +91,8 @@ module.exports = (robot) ->
                     else
                         message = result.action
                     
+                    console.log("==== response message =====")
+                    console.log(message)
                     return message
                 
                 return emitEvent
