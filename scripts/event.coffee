@@ -84,6 +84,11 @@ module.exports = (robot) ->
                 #execute_obj_listで設定した、funcの実行部分
                 emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
                     result = func(data)
+
+                    console.log("==== emitEvent result =====")
+                    console.log(result)
+                    console.log("==== emitEvent action =====")
+                    console.log(action)
                     message = null
 
                     unless action?
