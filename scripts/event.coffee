@@ -27,6 +27,7 @@ module.exports = (robot) ->
     #実装済みアクション
     imple_action_list = () ->
       return {
+        assigned: "assigned",
         opened: "opened",
         closed: "closed",
         created: "created"
@@ -48,12 +49,12 @@ module.exports = (robot) ->
       action_list = imple_action_list()
       return [
           setEvent(event_list.pull_request, [action_list.opened, action_list.closed])(tweetAboutPullRequest),
-          setEvent(event_list.issues, [action_list.opened, action_list.closed])(tweetAboutIssues)
+          setEvent(event_list.issues, [action_list.opened, action_list.closed, action_list.assigned])(tweetAboutIssues)
           setEvent(event_list.issue_comment, action_list.created)(tweetAboutIssueComments)
       ]
 
     #================ please set paires of Event and Handler  ==============================
-    getDefaultMessage = (func = null) ->
+    defaultMessage = (func = null) ->
       return () ->
         unless func
           return "default"
@@ -73,27 +74,24 @@ module.exports = (robot) ->
       issue = reqBody.issue
       assignees = issue.assignees
 
-      console.log("assignees")
-      console.log(assignees)
-      for i in [0..Object.keys(assignees).length]
-        console.log(assignees[i])
-
       message = (text) ->
         return () ->
           return """
             #{issue.url}
-            @#{issue.user.login}さんがIssueを#{text}を上げました。
+            @#{issue.user.login}さんがIssueを#{text}しました。
             assignees
             #{
               for i in [0..Object.keys(assignees).length]
-                "@"+ assignees[i].login
+                "@"+ assignees[i]['login']
             }
             created_at: #{comment.created_at}
             """
+
       return {
-          default: getDefaultMessage(),
-          opened: message("opened"),
-          closed: message("closed")
+        default: defaultMessage(),
+        assigned: message("assigned"),
+        opened: message("opened"),
+        closed: message("closed")
       }
 
 
