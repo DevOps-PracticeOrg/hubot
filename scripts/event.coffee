@@ -3,11 +3,10 @@
 #
 # Notes:
 # Pull Request, Issueが対象
+config = null
 crypto = require 'crypto'
 _ = require 'lodash'
 # test_json = require('../test.json')
-
-ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else "DevOps-PracticeOrg"
 GITHUB_LISTEN = "/github/#{ORG}"
 
 #実装済みイベント
