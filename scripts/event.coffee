@@ -154,7 +154,8 @@ module.exports = (robot) ->
         #================ helper ==============================
         init = (request) ->
             req = _.cloneDeep request
-
+            console.log("===Request: action : #{req.action} ==")
+            console.log(request)
             getRequest = () ->
                 return () ->
                     return req
@@ -216,7 +217,7 @@ module.exports = (robot) ->
         #execute_obj_listで
         execute = (event_obj) ->
             action = config.action()
-            console.log("============execute start! wit action : #{action}==============")
+            console.log("============execute start! with action : #{action}==============")
 
             # checkEventAction = true
             checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
