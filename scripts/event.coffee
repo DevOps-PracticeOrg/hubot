@@ -2,7 +2,6 @@
 # GitHub Webhookのエンドポイント
 #
 # Notes:
-
 module.exports = (robot) ->
   config = null
   crypto = require 'crypto'
