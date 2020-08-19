@@ -24,7 +24,7 @@ module.exports = (robot) ->
 
 
     robot.router.post GITHUB_LISTEN, (request, res) ->
- 
+
         #================ please set teams, repos and chat rooms =============================
         #レポジトリネームからをRoomを取得したい
 
@@ -34,7 +34,7 @@ module.exports = (robot) ->
                 repoName1: ["かつおスライスの仕方", "叩き"],
                 repoName2: ["ツナ缶の作り方"],
             }
-        
+
         event_list = () ->
             return [
                 setEvent(pull_request, [opened, closed])(tweetForPullRequest),
@@ -90,11 +90,13 @@ module.exports = (robot) ->
                         message = result.default
                     else
                         message = result.action
-                    
+
+                    message = if message then "テスト" else message
+
                     console.log("==== response message =====")
                     console.log(message)
                     return message
-                
+
                 return emitEvent
 
 
@@ -129,7 +131,7 @@ module.exports = (robot) ->
                         actionList = if checkArray then actionList else [actionList]
                         obj[event]['func'] = event_generate(func)
                         obj[event]['actions'] = actionList
-                    
+
                     return obj
                     # return {
                     #     eventName1: {
@@ -159,7 +161,7 @@ module.exports = (robot) ->
                 signature = req.get 'X-Hub-Signature'
                 return () ->
                     return signature
-            
+
             getEventType = () ->
                 event_type = req.get 'X-Github-Event'
                 return () ->
@@ -174,7 +176,7 @@ module.exports = (robot) ->
             }
 
             return obj
-        
+
 
         isCorrectSignature = (config) ->
 
@@ -184,7 +186,7 @@ module.exports = (robot) ->
             hmac.update JSON.stringify(config.req().body), 'utf-8'
             hashed_data = hmac.digest 'hex'
             generated_signature = [digest_method, hashed_data].join '='
-            
+
             return config.signature() is generated_signature
 
 
@@ -212,7 +214,7 @@ module.exports = (robot) ->
             action = config.action()
             # checkEventAction = true
             checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
-            
+
             # data = test_json
             data = config.req().body
 
@@ -280,12 +282,12 @@ module.exports = (robot) ->
 
             # checkAuth = true
             checkAuth = isCorrectSignature config
-            
+
             console.log("============checkAuth #{checkAuth}==============")
             unless checkAuth?
                 res.status(401).send 'unauthorized'
                 return
-            
+
             console.log("============execute_obj_list start!==============")
             obj = execute_obj_list(createExecuteObjlist)
             console.log(obj)
