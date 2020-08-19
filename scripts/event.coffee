@@ -2,24 +2,25 @@
 # GitHub Webhookのエンドポイント
 #
 # Notes:
+config = null
+crypto = require 'crypto'
+_ = require 'lodash'
+# test_json = require('../test.json')
+
+ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else "DevOps-PracticeOrg"
+GITHUB_LISTEN = "/github/#{ORG}"
+
+#実装済みイベント
+pull_request = "pull_request"
+issues = "issues"
+issue_comment = "issue_comment"
+
+#実装済みアクション
+opened = "opened"
+closed = "closed"
+created = "created"
+
 module.exports = (robot) ->
-  config = null
-  crypto = require 'crypto'
-  _ = require 'lodash'
-  # test_json = require('../test.json')
-
-  ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else "DevOps-PracticeOrg"
-  GITHUB_LISTEN = "/github/#{ORG}"
-
-  #実装済みイベント
-  pull_request = "pull_request"
-  issues = "issues"
-  issue_comment = "issue_comment"
-
-  #実装済みアクション
-  opened = "opened"
-  closed = "closed"
-  created = "created"
 
     robot.router.post GITHUB_LISTEN, (request, res) ->
 
@@ -229,17 +230,6 @@ module.exports = (robot) ->
             else
                 console.log("============action: #{action}=============")
                 return emitEvent(data, action)
-
-
-        pipeLine = () ->
-            checkEventType
-            checkAction
-            createMessage
-            IssueComments
-            #Team名が必要かどうか
-            #Org : new team,repo,member
-            #Team : issue PR
-
 
         getRoom = () ->
             rooms_list = Rooms()
