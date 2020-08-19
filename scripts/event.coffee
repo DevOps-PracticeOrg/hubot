@@ -214,9 +214,9 @@ module.exports = (robot) ->
 
         #execute_obj_listで
         execute = (event_obj) ->
-            console.log("============execute start!==============")
-
             action = config.action()
+            console.log("============execute start! wit action : #{action}==============")
+
             # checkEventAction = true
             checkEventAction = _.isArray event_obj.actions && _.has event_obj.actions, action
 
