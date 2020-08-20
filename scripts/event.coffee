@@ -178,10 +178,13 @@ module.exports = (robot) ->
       console.log("==handler_list==")
       console.log(handler_list)
 
-      for key, handler_func of handler_list
-        console.log("==handler_func==")
-        console.log(handler_func)
-        handler = handler_func()
+      keys = Object.keys(handler_list)
+
+      for i in [0..(--keys.length)]
+        key = keys[i]
+        handler = handler_list[key]()
+        console.log("==handler==")
+        console.log(handler)
         set_event = setEvent(handler.event_name())(handler.execute)
         list.push(set_event)
 
