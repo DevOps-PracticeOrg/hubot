@@ -62,7 +62,7 @@ module.exports = (robot) ->
 
         if size > 0
           for i in [0..Object.keys(assignees).length]
-            console.log(assignees[i]['login'])
+            console.log(assignees[i].login)
             # toList +=  "@" +  assignees[i]['login'] + " "
 
         return toList
@@ -357,10 +357,10 @@ module.exports = (robot) ->
       console.log("============handleEvent show result==============")
       console.log(result)
 
-      if Object.keys(err_msg).length == 0
-        sendResponse(result)
+      if Object.keys(err_msg).length > 0
+        sendErrorResponse()()
 
-      sendErrorResponse()()
+      sendResponse(result)
 
     catch e
       sendErrorResponse(e)()
