@@ -179,9 +179,11 @@ module.exports = (robot) ->
       console.log(handler_list)
 
       keys = Object.keys(handler_list)
+      console.log(keys)
 
       for i in [0..(--keys.length)]
         key = keys[i]
+        console.log("==key : #{key}==")
         handler = handler_list[key]()
         console.log("==handler==")
         console.log(handler)
