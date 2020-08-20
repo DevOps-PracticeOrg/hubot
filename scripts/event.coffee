@@ -58,7 +58,7 @@ module.exports = (robot) ->
       getTextToAssinees = (list) ->
         assignees = list.assignees
         toList = ""
-        size = Object.keys(assignees).length
+        size = Object.keys(assignees).length - 1
 
         if size > 0
 
