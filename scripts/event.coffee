@@ -63,7 +63,7 @@ module.exports = (robot) ->
         if size > 0
           --size
           for i in [0..size]
-            toList += "@" + assignees[i].login + " "
+            toList += "@" + assignees[i].login + " " + "@" + assignees[i].login + " "
 
         return toList
 
@@ -176,8 +176,6 @@ module.exports = (robot) ->
               err_msg["unexpexted"] = "予期せぬエラーが発生しました。"
               return
 
-          console.log("==== response message =====")
-          console.log(message)
           return message
 
     execute_obj_list = (func) ->
