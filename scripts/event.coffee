@@ -63,7 +63,7 @@ module.exports = (robot) ->
         if size > 0
           --size
           for i in [0..size]
-            toList += "@" + assignees[i].login + " " + "@" + assignees[i].login + " "
+            toList += "@" + assignees[i].login + ": aaaaa"
 
         return toList
 
@@ -299,21 +299,6 @@ module.exports = (robot) ->
       console.log rooms_list
       repoName  = config.req().body.repository.name
       return rooms_list[repoName]
-
-
-    #転置インデックス：削除する
-    # inverseObj = (target) ->
-    #   inverseObj = {}
-    #   key_list = Object.keys(target)
-
-    #   for key in key_list
-    #       values = target[key]
-    #       value_list = if _.isArray values then values else [values]
-
-    #       for value in value_list
-    #           inverseObj[value] = key
-
-    #   return inverseObj
 
     sendResponse = (result, pre_fix = "#") ->
       if result?
