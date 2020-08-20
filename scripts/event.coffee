@@ -69,8 +69,7 @@ module.exports = (robot) ->
                   "closed",
                 ]
 
-              message: (reqBody) ->
-                issue = reqBody.issue
+              message: (issue) ->
                 assignees = getAssinees(issue)
 
                 return (action) ->
@@ -83,9 +82,8 @@ module.exports = (robot) ->
                             """
 
               execute: (reqBody) ->
-                handle()
                 console.log("===tweetAboutIssues===")
-                message = this.message(reqBody)
+                message = this.message(reqBody.issue)
                 return getSetMessage(this.actions, message)
             }
 
