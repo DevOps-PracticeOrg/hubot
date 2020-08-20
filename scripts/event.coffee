@@ -13,7 +13,7 @@ module.exports = (robot) ->
 
   robot.router.post GITHUB_LISTEN, (request, res) ->
 
-    #================ please repos and chat rooms =============================
+    #================ please set paris pf repos and chat rooms =============================
     #レポジトリネームからをRoomを取得したい。現時点で、レポジトリからチームリストを取得するAPIがうまく起動しないので妥協
 
     Rooms = () ->
@@ -42,7 +42,7 @@ module.exports = (robot) ->
             actions: () ->
               return [
                 "opened",
-                "opened",
+                "closed",
               ]
 
             message: (pr) ->
@@ -169,9 +169,28 @@ module.exports = (robot) ->
         return toList
     }
 
+    #=========================================================================
+    #特定のルームに送信可能
+    #特定のルームの中の特定の人へメンションできない→どうすれば？
+    sendResponse = (result) ->
+      if result?
+        rooms = getRoom()
+        console.log("============room==============")
+        roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
+        console.log roomName
 
+        robot.messageRoom roomName, result
+        res.status(201).send config.action()
+      else
+        res.status(200).send 'ok'
 
-
+    sendErrorResponse = (e = null) ->
+      console.log e
+      return (func = null) ->
+        unless func
+          res.status(400).send "エラーです"
+        else
+          func()
 
 
     #================ Don't touch any sentences below==============================
@@ -339,26 +358,6 @@ module.exports = (robot) ->
       console.log rooms_list
       repoName  = config.req().body.repository.name
       return rooms_list[repoName]
-
-    sendResponse = (result) ->
-      if result?
-        rooms = getRoom()
-        console.log("============room==============")
-        roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
-        console.log roomName
-
-        robot.messageRoom roomName, result
-        res.status(201).send config.action()
-      else
-        res.status(200).send 'ok'
-
-    sendErrorResponse = (e = null) ->
-      console.log e
-      return (func = null) ->
-        unless func
-          res.status(400).send "エラーです"
-        else
-          func()
 
     #================ main logic ==============================
     try
