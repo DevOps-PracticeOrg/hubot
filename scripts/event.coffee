@@ -73,8 +73,9 @@ module.exports = (robot) ->
                           #{issue.url}
                           @#{issue.user.login}さんがIssueを#{action}。
                           #{assignees}
-                          created_at: #{issue.created_at}
                           """
+            defaultMessage: () ->
+              return "default"
           }
 
           return {
@@ -103,10 +104,13 @@ module.exports = (robot) ->
               return (action) ->
                 return () ->
                   return  """
-                          #{comment.user.login}さんがIssueコメントを#{action}。
-                          #{issue.user.login}さんへ：#{issue.title}
+                          Issueにコメントを#{action}
+
+                          Issueタイトル：#{issue.title}
+                          Issue発行者：@#{issue.user.login}さん
+                          コメントした人：@#{comment.user.login}さん
+
                           url: #{issue.html_url}
-                          created_at: #{comment.created_at}:
                           """
           }
 
@@ -142,8 +146,10 @@ module.exports = (robot) ->
           list[action_name] = message(action_name)
         )
 
-        if list["default"] == undefined
+        unless config.defaultMessage
           list["default"] = this.defaultMessage()
+        else
+          list["default"] = this.defaultMessage(config.defaultMessage)
 
         return list
 
