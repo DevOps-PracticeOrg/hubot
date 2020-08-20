@@ -20,12 +20,6 @@ module.exports = (robot) ->
     issues = "issues"
     issue_comment = "issue_comment"
 
-    #実装済みアクション
-    assigned = "assigned"
-    opened = "opened"
-    closed = "closed"
-    created = "created"
-
     #================ please repos and chat rooms =============================
     #レポジトリネームからをRoomを取得したい。現時点で、レポジトリからチームリストを取得するAPIがうまく起動しないので妥協
 
@@ -39,34 +33,35 @@ module.exports = (robot) ->
     event_list = () ->
       handler = imple_handler_obj()
       return [
-        setEvent(pull_request, [opened, closed])(handler.tweetAboutPullRequest),
-        # setEvent(issues, [opened, closed, assigned])(handler.tweetAboutIssues),
-        setEvent(issues)(handler.tweetAboutIssues),
-        setEvent(issue_comment, created)(handler.tweetAboutIssueComments)
+        setEvent(pull_request)(handler.tweetAboutPullRequest),
+        setEvent(handler.tweetAboutIssues().event_name)(handler.tweetAboutIssues().execute),
+        setEvent(issue_comment)(handler.tweetAboutIssueComments)
       ]
 
     #================ please set paires of Event and Handler  ==============================
 
     imple_handler_obj = () ->
 
-      defaultMessage = (func = null) ->
-        return () ->
-          unless func
-            return "default"
-          else
-            return func()
+      utils = {
+        defaultMessage: (func = null) ->
+          return () ->
+            unless func
+              return "default"
+            else
+              return func()
 
-      getTextToAssinees = (list) ->
-        assignees = list.assignees
-        toList = ""
-        size = Object.keys(assignees).length
+        getTextToAssinees: (list) ->
+          assignees = list.assignees
+          toList = ""
+          size = Object.keys(assignees).length
 
-        if size > 0
-          --size
-          for i in [0..size]
-            toList += "@" + assignees[i].login + " "
+          if size > 0
+            --size
+            for i in [0..size]
+              toList += "@" + assignees[i].login + " "
 
-        return toList
+          return toList
+      }
 
       return {
 
@@ -78,34 +73,40 @@ module.exports = (robot) ->
               return  """
                       "#{pr.user.login}さんがPull Requestを#{action}",
                       """
-
           return {
-            default: defaultMessage(),
+            event_name: "pull_request",
+            default: utils.defaultMessage(),
             opened: message("opened"),
             closed: message("closed")
           }
 
 
-        tweetAboutIssues: (reqBody) ->
-          issue = reqBody.issue
-          console.log("===tweetAboutIssues===")
-          assignees = getTextToAssinees(issue)
-          console.log(assignees)
-          message = (action) ->
-            return () ->
-              return  """
-                      #{issue.url}
-                      @#{issue.user.login}さんがIssueを#{action}。
-                      #{assignees}
-                      created_at: #{issue.created_at}
-                      """
-          return {
-            default: defaultMessage(),
-            assigned: message("assigned"),
-            opened: message("opened"),
-            closed: message("closed")
-          }
+        tweetAboutIssues: () ->
 
+          return {
+            event_name: "issues",
+
+            execute: (reqBody) ->
+
+              console.log("===tweetAboutIssues===")
+              issue = reqBody.issue
+              assignees = utils.getTextToAssinees(issue)
+
+              message = (action) ->
+                return () ->
+                  return  """
+                          #{issue.url}
+                          @#{issue.user.login}さんがIssueを#{action}。
+                          #{assignees}
+                          created_at: #{issue.created_at}
+                          """
+              return {
+                default: utils.defaultMessage(),
+                assigned: message("assigned"),
+                opened: message("opened"),
+                closed: message("closed")
+              }
+            }
 
         tweetAboutIssueComments: (reqBody) ->
           issue = reqBody.issue
@@ -120,7 +121,8 @@ module.exports = (robot) ->
                       created_at: #{comment.created_at}:
                       """
           return {
-              default: defaultMessage(),
+              event_name: "issue_comment",
+              default: utils.defaultMessage(),
               created: message("created")
             }
       }
@@ -154,7 +156,7 @@ module.exports = (robot) ->
 
         #execute_obj_listで設定した、funcの実行部分
         return emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
-          result = func(data)
+          result_message = func(data) #imple_handler_objの中身を実行
 
           console.log("==== emitEvent result =====")
           console.log(result)
@@ -163,9 +165,9 @@ module.exports = (robot) ->
           message = null
 
           unless action?
-            message = result['default']()
+            message = result_message['default']()
           else
-            event_func = result[action]
+            event_func = result_message[action]
 
             if event_func == undefined
               err_msg["no_action"] = "#{action}：対応するアクションが未定義です。"
@@ -198,28 +200,18 @@ module.exports = (robot) ->
       return result
 
 
-    setEvent = (event, actionList = null) ->
+    setEvent = (event) ->
       return (func) ->
         return (obj = {}, event_generate = _.indentity) ->
           obj[event] = {}
-          obj[event]['actions'] = null
-
-          unless actionList?
-              obj[event]['func'] = event_generate(func)
-          else
-              checkArray = _.isArray actionList
-              actionList = if checkArray then actionList else [actionList]
-              obj[event]['func'] = event_generate(func)
-              obj[event]['actions'] = actionList
+          obj[event]['func'] = event_generate(func)
 
           return obj
           # return {
           #     eventName1: {
-          #         actions: null
           #         func: message(IssueComments),
           #     },
           #     eventName2: {
-          #         actions: [open, close]
           #         func: message(IssueComments),
           #     }
           # }
@@ -280,8 +272,7 @@ module.exports = (robot) ->
       unless checkEvent?
           return
       else
-          return execute(execute_event_list[event])
-          # return execute(execute_obj['issues'])
+          return execute(execute_event_list[event])#ここ！
 
     #execute_obj_listで
     execute = (execute_event) ->
