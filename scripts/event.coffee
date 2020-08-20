@@ -30,103 +30,123 @@ module.exports = (robot) ->
           repoName2: ["ツナ缶の作り方"],
       }
 
-    event_list = () ->
-      handler = imple_handler_obj()
-      return [
-        setEvent(pull_request)(handler.tweetAboutPullRequest),
-        setEvent(handler.tweetAboutIssues().event_name)(handler.tweetAboutIssues().execute),
-        setEvent(issue_comment)(handler.tweetAboutIssueComments)
-      ]
-
-    #================ please set paires of Event and Handler  ==============================
+    #================ please set paires of Event and Handler  =============================
 
     imple_handler_obj = () ->
 
-      utils = {
-        defaultMessage: (func = null) ->
-          return () ->
-            unless func
-              return "default"
-            else
-              return func()
-
-        getTextToAssinees: (list) ->
-          assignees = list.assignees
-          toList = ""
-          size = Object.keys(assignees).length
-
-          if size > 0
-            --size
-            for i in [0..size]
-              toList += "@" + assignees[i].login + " "
-
-          return toList
-      }
-
       return {
 
-        tweetAboutPullRequest: (reqBody) ->
-          pr = reqBody.pull_request
-
-          message = (action) ->
-            return () ->
-              return  """
-                      "#{pr.user.login}さんがPull Requestを#{action}",
-                      """
+        tweetAboutPullRequest: () ->
           return {
-            event_name: "pull_request",
-            default: utils.defaultMessage(),
-            opened: message("opened"),
-            closed: message("closed")
-          }
-
-
-        tweetAboutIssues: () ->
-
-          return {
-            event_name: "issues",
+            event_name: () ->
+              return "pull_request"
 
             execute: (reqBody) ->
-
-              console.log("===tweetAboutIssues===")
-              issue = reqBody.issue
-              assignees = utils.getTextToAssinees(issue)
+              pr = reqBody.pull_request
 
               message = (action) ->
                 return () ->
                   return  """
-                          #{issue.url}
-                          @#{issue.user.login}さんがIssueを#{action}。
-                          #{assignees}
-                          created_at: #{issue.created_at}
+                          "#{pr.user.login}さんがPull Requestを#{action}",
                           """
               return {
-                default: utils.defaultMessage(),
-                assigned: message("assigned"),
+                default: defaultMessage(),
                 opened: message("opened"),
                 closed: message("closed")
               }
             }
 
-        tweetAboutIssueComments: (reqBody) ->
-          issue = reqBody.issue
-          comment = reqBody.comment
-
-          message = (action) ->
-            return () ->
-              return  """
-                      #{comment.user.login}さんがIssueコメントを#{action}。
-                      #{issue.user.login}さんへ：#{issue.title}
-                      url: #{issue.html_url}
-                      created_at: #{comment.created_at}:
-                      """
+        tweetAboutIssues: () ->
           return {
-              event_name: "issue_comment",
-              default: utils.defaultMessage(),
-              created: message("created")
+
+              event_name: () ->
+                return "issues"
+
+              actions: () ->
+                return [
+                  "assigned",
+                  "opened",
+                  "closed",
+                ]
+
+              message: (reqBody) ->
+                issue = reqBody.issue
+                assignees = getAssinees(issue)
+
+                return (action) ->
+                  return () ->
+                    return  """
+                            #{issue.url}
+                            @#{issue.user.login}さんがIssueを#{action}。
+                            #{assignees}
+                            created_at: #{issue.created_at}
+                            """
+
+              execute: (reqBody) ->
+                handle()
+                console.log("===tweetAboutIssues===")
+                message = this.message(reqBody)
+                return getSetMessage(this.actions, message)
             }
+
+        tweetAboutIssueComments: () ->
+          return {
+            event_name: () ->
+              return "issue_comment"
+
+            execute: (reqBody) ->
+
+              issue = reqBody.issue
+              comment = reqBody.comment
+
+              message = (action) ->
+                return () ->
+                  return  """
+                          #{comment.user.login}さんがIssueコメントを#{action}。
+                          #{issue.user.login}さんへ：#{issue.title}
+                          url: #{issue.html_url}
+                          created_at: #{comment.created_at}:
+                          """
+              return {
+                  default: efaultMessage(),
+                  created: message("created")
+                }
+          }
       }
 
+    handler_utils = {
+
+      defaultMessage: (func = null) ->
+        return () ->
+          unless func
+            return "default"
+          else
+            return func()
+
+      getSetMessage = (action_list, message) ->
+        size = Object.keys(action_list).length
+        list = {}
+
+        for i in [0..(--size)]
+          action_name = action_list[i]
+          list[action_name] = message(action_name)
+
+        if list["default"] == undefined
+          list["default"] = defaultMessage()
+
+        return list
+
+      getAssinees: (list) ->
+        assignees = list.assignees
+        toList = ""
+        size = Object.keys(assignees).length
+
+        if size > 0
+          for i in [0..(--size)]
+            toList += "@" + assignees[i].login + " "
+
+        return toList
+    }
     # dynamicExtend = (list) ->
     #   defaultMessage = (func = null) ->
     #     return () ->
@@ -149,7 +169,23 @@ module.exports = (robot) ->
     # dynamicExtend(imple_handler_obj)
 
     #================ Don't touch all below here==============================
+
+    event_list = () ->
+
+      list = []
+      handler_list = imple_handler_obj()
+      handler_list.__proto__.utils = handler_utils
+      size = Object.keys(handler_list).length
+
+      for i in [0..(--size)]
+        hanler = handler_list[i]()
+        setEvent(hanler.event_name())(hanler.execute)
+        list.push(setEvent)
+
+      return list
+
     config = null
+
     #================ set execute_obj_list ==============================
     eventGenerate = () ->
       return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
