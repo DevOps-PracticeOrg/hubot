@@ -70,6 +70,13 @@ module.exports = (robot) ->
                         created_at: #{issue.created_at}
                         """
 
+          actions = () ->
+              return [
+                "assigned",
+                "opened",
+                "closed",
+              ]
+
           return {
               event_name: () ->
                 return "issues"
@@ -84,7 +91,7 @@ module.exports = (robot) ->
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
                 message = message(reqBody.issue)
-                return utils.getSetMessage(this.actions, message)
+                return utils.getSetMessage(this.actions(), message)
             }
 
         tweetAboutIssueComments: () ->
