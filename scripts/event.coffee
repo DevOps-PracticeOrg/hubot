@@ -57,15 +57,18 @@ module.exports = (robot) ->
 
       getTextToAssinees = (list) ->
         assignees = list.assignees
-        console.log(assignees)
         toList = ""
-        for i in [0..Object.keys(assignees).length]
-          console.log(assignees[i])
-          # toList +=  "@" +  assignees[i]['login'] + " "
+        size = Object.keys(assignees).length
+
+        if size > 0
+          for i in [0..Object.keys(assignees).length]
+            console.log(assignees[i].login)
+            # toList +=  "@" +  assignees[i]['login'] + " "
 
         return toList
 
       return {
+
         tweetAboutPullRequest: (reqBody) ->
           pr = reqBody.pull_request
 
@@ -85,13 +88,14 @@ module.exports = (robot) ->
         tweetAboutIssues: (reqBody) ->
           issue = reqBody.issue
           console.log("===tweetAboutIssues===")
+
           message = (action) ->
             return () ->
               return  """
                       #{issue.url}
                       @#{issue.user.login}さんがIssueを#{action}。
                       #{getTextToAssinees(issue)}
-                      created_at: #{comment.created_at}
+                      created_at: #{issue.created_at}
                       """
           return {
             default: defaultMessage(),
@@ -163,9 +167,12 @@ module.exports = (robot) ->
 
             if event_func == undefined
               sendErrorResponse("#{action}：対応するアクションが未定義です。")()
-            else
-              message = event_func()
+              return
 
+            try
+              message = event_func()
+            catch e
+              sendErrorResponse(e)()
 
           console.log("==== response message =====")
           console.log(message)
