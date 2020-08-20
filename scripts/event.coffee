@@ -57,41 +57,36 @@ module.exports = (robot) ->
             }
 
         tweetAboutIssues: () ->
+          config = {
+            message: (issue) ->
+              assignees = utils.getAssinees(issue)
 
-          message = (issue) ->
-            assignees = utils.getAssinees(issue)
+              return (action) ->
+                return () ->
+                  return  """
+                          #{issue.url}
+                          @#{issue.user.login}さんがIssueを#{action}。
+                          #{assignees}
+                          created_at: #{issue.created_at}
+                          """
 
-            return (action) ->
-              return () ->
-                return  """
-                        #{issue.url}
-                        @#{issue.user.login}さんがIssueを#{action}。
-                        #{assignees}
-                        created_at: #{issue.created_at}
-                        """
-
-          actions = () ->
-              return [
-                "assigned",
-                "opened",
-                "closed",
-              ]
-
-          return {
-              event_name: () ->
-                return "issues"
-
-              actions: () ->
+            actions: () ->
                 return [
                   "assigned",
                   "opened",
                   "closed",
                 ]
 
+            event_name: () ->
+              return "issues"
+          }
+
+          return {
+
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
-                message = message(reqBody.issue)
-                return utils.getSetMessage(actions(), message)
+                message = config.message(reqBody.issue)
+                return utils.getSetMessage(config, message)
             }
 
         tweetAboutIssueComments: () ->
@@ -128,7 +123,8 @@ module.exports = (robot) ->
           else
             return func()
 
-      getSetMessage: (action_list, message) ->
+      getSetMessage: (config, message) ->
+        action_list = config.actions()
         size = Object.keys(action_list).length
         list = {}
 
