@@ -123,7 +123,7 @@ module.exports = (robot) ->
           else
             return func()
 
-      getSetMessage = (action_list, message) ->
+      getSetMessage: (action_list, message) ->
         size = Object.keys(action_list).length
         list = {}
 
@@ -147,6 +147,7 @@ module.exports = (robot) ->
 
         return toList
     }
+
     # dynamicExtend = (list) ->
     #   defaultMessage = (func = null) ->
     #     return () ->
