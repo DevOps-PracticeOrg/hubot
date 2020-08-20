@@ -16,23 +16,15 @@ module.exports = (robot) ->
     #================ 初期設定 =============================
 
     #実装済みイベント
-    imple_event_list = () ->
-      return {
-        pull_request: "pull_request",
-        issues: "issues",
-        issue_comment: "issue_comment"
-      }
-
+    pull_request = "pull_request"
+    issues = "issues"
+    issue_comment = "issue_comment"
 
     #実装済みアクション
-    imple_action_list = () ->
-      return {
-        assigned: "assigned",
-        opened: "opened",
-        closed: "closed",
-        created: "created"
-      }
-
+    assigned = "assigned"
+    opened = "opened"
+    closed = "closed"
+    created = "created"
 
     #================ please repos and chat rooms =============================
     #レポジトリネームからをRoomを取得したい。現時点で、レポジトリからチームリストを取得するAPIがうまく起動しないので妥協
@@ -45,82 +37,104 @@ module.exports = (robot) ->
       }
 
     event_list = () ->
-      event_list = imple_event_list()
-      action_list = imple_action_list()
+      handler = imple_handler_obj()
       return [
-          setEvent(event_list.pull_request, [action_list.opened, action_list.closed])(tweetAboutPullRequest),
-          setEvent(event_list.issues, [action_list.opened, action_list.closed, action_list.assigned])(tweetAboutIssues)
-          setEvent(event_list.issue_comment, action_list.created)(tweetAboutIssueComments)
+        setEvent(pull_request, [opened, closed])(handler.tweetAboutPullRequest),
+        setEvent(issues, [opened, closed, assigned])(handler.tweetAboutIssues)
+        setEvent(issue_comment, created)(handler.tweetAboutIssueComments)
       ]
 
     #================ please set paires of Event and Handler  ==============================
-    defaultMessage = (func = null) ->
-      return () ->
-        unless func
-          return "default"
-        else
-          return func()
 
-    responseMessage = (func) ->
-      return func
+    imple_handler_obj = () ->
 
-    tweetAboutPullRequest = (reqBody) ->
-      pr = reqBody.pull_request
-
-      message = (text) ->
-        return () -> """
-          "#{pr.user.login}さんがPull Requestを#{text}しました。",
-          """
-
-      return {
-        default: defaultMessage(),
-        opened: message("opened"),
-        closed: message("closed")
-      }
-
-
-    tweetAboutIssues = (reqBody) ->
-      issue = reqBody.issue
-      assignees = ""
-      for i in [0..Object.keys(issue.assignees).length]
-        assignees +=  "@" +  assignees[i]['login'] + " "
-
-      message = (text) ->
+      defaultMessage = (func = null) ->
         return () ->
-          return """
-            #{issue.url}
-            @#{issue.user.login}さんがIssueを#{text}しました。
-            #{assignees}
-            created_at: #{comment.created_at}
-            """
+          unless func
+            return "default"
+          else
+            return func()
 
       return {
-        default: defaultMessage(),
-        assigned: message("assigned"),
-        opened: message("opened"),
-        closed: message("closed")
+        tweetAboutPullRequest: (reqBody) ->
+          pr = reqBody.pull_request
+
+          message = (action) ->
+            return () ->
+              return  """
+                      "#{pr.user.login}さんがPull Requestを#{action}",
+                      """
+
+          return {
+            default: defaultMessage(),
+            opened: message("opened"),
+            closed: message("closed")
+          }
+
+
+        tweetAboutIssues: (reqBody) ->
+          issue = reqBody.issue
+          assignees = issue["assignees"]
+          toList = ""
+          for i in [0..Object.keys(assignees).length]
+            toList +=  "@" +  assignees[i]['login'] + " "
+
+          message = (action) ->
+            return () ->
+              return  """
+                      #{issue.url}
+                      @#{issue.user.login}さんがIssueを#{action}。
+                      #{assignees}
+                      created_at: #{comment.created_at}
+                      """
+          return {
+            default: defaultMessage(),
+            assigned: message("assigned"),
+            opened: message("opened"),
+            closed: message("closed")
+          }
+
+
+        tweetAboutIssueComments: (reqBody) ->
+          issue = reqBody.issue
+          comment = reqBody.comment
+
+          message = (action) ->
+            return () ->
+              return  """
+                      #{comment.user.login}さんがIssueコメントを#{action}。
+                      #{issue.user.login}さんへ：#{issue.title}
+                      url: #{issue.html_url}
+                      created_at: #{comment.created_at}:
+                      """
+          return {
+              default: defaultMessage(),
+              created: message("created")
+            }
       }
 
+    # dynamicExtend = (list) ->
+    #   defaultMessage = (func = null) ->
+    #     return () ->
+    #       unless func
+    #         return "default"
+    #       else
+    #         return func()
 
-    tweetAboutIssueComments = (reqBody) ->
-      issue = reqBody.issue
-      comment = reqBody.comment
+    #   responseMessage = (func) ->
+    #     return func
 
-      message = (text) ->
-        return () ->
-          return  """
-                  #{comment.user.login}さんがIssueコメントしました。
-                  #{issue.user.login}さんへ：#{issue.title}
-                  url: #{issue.html_url}
-                  created_at: #{comment.created_at}:
-                  """
-      return {
-          default: defaultMessage(),
-          created: message("created")
-      }
+    #   return () ->
+    #     for i in [0..Object.keys(list).length]
+    #       if list[i].defaultMessage == undefined
+    #         list[i].prototype.defaultMessage = defaultMessage
 
+    #       if list[i].responseMessage == undefined
+    #         list[i].prototype.responseMessage = responseMessage
 
-    #================ Don't touch all below here ==============================
+    # dynamicExtend(imple_handler_obj)
+
+    #================ Don't touch all below here==============================
     config = null
     #================ set execute_obj_list ==============================
     eventGenerate = () ->
@@ -165,7 +179,8 @@ module.exports = (robot) ->
       result =  _.reduce(
           set_obj_list,
           (target, set_event) ->
-              return set_event(target, event_generate)
+            #setEventの最奥のクロージャを起動
+            return set_event(target, event_generate)
           ,
           {}
       )
@@ -243,7 +258,7 @@ module.exports = (robot) ->
       return config.signature() is generated_signature
 
 
-    handleEvent = (execute_obj) ->
+    handleEvent = (execute_event_list) ->
       console.log("============handleEvent start!==============")
       resultObj = {
           err_msg: {},
@@ -251,26 +266,26 @@ module.exports = (robot) ->
       }
 
       event = config.event_type()
-      checkEvent = execute_obj[event]
+      checkEvent = execute_event_list[event]
       console.log("============event==============")
-      console.log( execute_obj[event])
+      console.log( execute_event_list[event])
 
       unless checkEvent?
           return resultObj.err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
       else
-          return execute(execute_obj[event])
+          return execute(execute_event_list[event])
           # return execute(execute_obj['issues'])
 
     #execute_obj_listで
-    execute = (event_obj) ->
+    execute = (execute_event) ->
       console.log("============execute start! with action : #{action}==============")
-      console.log(event_obj)
+      console.log(execute_event)
 
       action = config.action()
       data = config.req().body
 
-      #eventGenerateの一番内部のemitEventが起動する
-      emitEvent = event_obj.func
+      #eventGenerateの内部のemitEventが起動する
+      emitEvent = execute_event.func
       return emitEvent(data, action)
 
     getRoom = () ->
@@ -329,9 +344,9 @@ module.exports = (robot) ->
           return
 
       console.log("============execute_obj_list start!==============")
-      obj = execute_obj_list(createExecuteObjlist)
-      console.log(obj)
-      result = handleEvent(obj)
+      execute_event_list = execute_obj_list(createExecuteObjlist)
+      console.log(execute_event_list)
+      result = handleEvent(execute_event_list)
       console.log("============handleEvent show result==============")
       console.log(result)
 
