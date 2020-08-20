@@ -71,11 +71,11 @@ module.exports = (robot) ->
                           """
 
             actions: () ->
-                return [
-                  "assigned",
-                  "opened",
-                  "closed",
-                ]
+              return [
+                "assigned",
+                "opened",
+                "closed",
+              ]
           }
 
           return {
@@ -132,7 +132,7 @@ module.exports = (robot) ->
           list[action_name] = message(action_name)
 
         if list["default"] == undefined
-          list["default"] = defaultMessage.apply(handler_utils, null)
+          list["default"] = this.defaultMessage()
 
         return list
 
