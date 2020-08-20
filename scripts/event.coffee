@@ -132,12 +132,11 @@ module.exports = (robot) ->
 
       getSetMessage: (config, message) ->
         action_list = config.actions()
-        size = Object.keys(action_list).length
-        list = {}
 
-        for i in [0..(--size)]
-          action_name = action_list[i]
+        list = {}
+        _.forEach(action_list, (action_name) ->
           list[action_name] = message(action_name)
+        )
 
         if list["default"] == undefined
           list["default"] = this.defaultMessage()
@@ -147,11 +146,9 @@ module.exports = (robot) ->
       getAssinees: (list) ->
         assignees = list.assignees
         toList = ""
-        size = Object.keys(assignees).length
-
-        if size > 0
-          for i in [0..(--size)]
-            toList += "@" + assignees[i].login + " "
+        _.forEach(assignees, (assignee) ->
+          toList += "@" + assignee.login + " "
+        )
 
         return toList
     }
