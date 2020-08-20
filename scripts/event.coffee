@@ -59,7 +59,7 @@ module.exports = (robot) ->
         tweetAboutIssues: () ->
 
           message = (issue) ->
-            assignees = getAssinees(issue)
+            assignees = utils.getAssinees(issue)
 
             return (action) ->
               return () ->
@@ -130,7 +130,7 @@ module.exports = (robot) ->
           list[action_name] = message(action_name)
 
         if list["default"] == undefined
-          list["default"] = defaultMessage()
+          list["default"] = defaultMessage.apply(handler_utils, null)
 
         return list
 
