@@ -181,7 +181,7 @@ module.exports = (robot) ->
       keys = Object.keys(handler_list)
       console.log(keys)
 
-      for i in [0..(keys.length)]
+      for i in [0..(--keys.length)]
         console.log("====index : #{i}===")
         key = keys[i]
         console.log("==key : #{key}==")
