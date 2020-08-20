@@ -176,7 +176,7 @@ module.exports = (robot) ->
       list = []
       handler_list = imple_handler_obj()
       handler_list.__proto__.utils = handler_utils
-
+      console.log(handler_list)
       for key, handler_func of handler_list
         handler = handler_func()
         console.log(handler)
