@@ -62,7 +62,9 @@ module.exports = (robot) ->
 
         if size > 0
           for i in [0..size]
-            toList += "@" + assignees[i].login + " "
+            console.log("has login ....: #{assignees[i].hasOwnProperty('login')}")
+            console.log(assignees[i].login)
+            # toList += "@" + assignees[i].login + " "
 
         return toList
 
