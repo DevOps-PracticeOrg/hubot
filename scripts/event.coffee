@@ -62,7 +62,7 @@ module.exports = (robot) ->
 
         if size > 0
           for i in [0..Object.keys(assignees).length]
-            console.log(assignees[i].login)
+            console.log(Object.keys(assignees[i]))
             # toList +=  "@" +  assignees[i]['login'] + " "
 
         return toList
