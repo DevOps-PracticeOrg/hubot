@@ -58,10 +58,10 @@ module.exports = (robot) ->
       getTextToAssinees = (list) ->
         assignees = list.assignees
         toList = ""
-        size = Object.keys(assignees).length - 1
+        size = Object.keys(assignees).length
 
         if size > 0
-
+          --size
           for i in [0..size]
             name = "@" + assignees[i].login
             console.log("===assine_name : #{name}===")
