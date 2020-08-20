@@ -76,12 +76,11 @@ module.exports = (robot) ->
                   "opened",
                   "closed",
                 ]
-
-            event_name: () ->
-              return "issues"
           }
 
           return {
+              event_name: () ->
+                return "issues"
 
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
