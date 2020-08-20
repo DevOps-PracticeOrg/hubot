@@ -83,7 +83,7 @@ module.exports = (robot) ->
 
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
-                message = this.message(reqBody.issue)
+                message = message(reqBody.issue)
                 return getSetMessage(this.actions, message)
             }
 
