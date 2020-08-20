@@ -56,10 +56,12 @@ module.exports = (robot) ->
             return func()
 
       getTextToAssinees = (list) ->
-        assignees = list["assignees"]
+        assignees = list.assignees
+        console.log(assignees)
         toList = ""
         for i in [0..Object.keys(assignees).length]
-          toList +=  "@" +  assignees[i]['login'] + " "
+          console.log(assignees[i])
+          # toList +=  "@" +  assignees[i]['login'] + " "
 
         return toList
 
@@ -83,7 +85,6 @@ module.exports = (robot) ->
         tweetAboutIssues: (reqBody) ->
           issue = reqBody.issue
           console.log("===tweetAboutIssues===")
-          console.log(issue)
           message = (action) ->
             return () ->
               return  """
@@ -146,7 +147,7 @@ module.exports = (robot) ->
       return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
 
         #execute_obj_listで設定した、funcの実行部分
-        emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
+        return emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
           result = func(data)
 
           console.log("==== emitEvent result =====")
@@ -169,9 +170,6 @@ module.exports = (robot) ->
           console.log("==== response message =====")
           console.log(message)
           return message
-
-        return emitEvent
-
 
     execute_obj_list = (func) ->
       return  func(event_list())
