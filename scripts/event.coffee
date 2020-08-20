@@ -55,6 +55,14 @@ module.exports = (robot) ->
           else
             return func()
 
+      getTextToAssinees = (list) ->
+        assignees = list["assignees"]
+        toList = ""
+        for i in [0..Object.keys(assignees).length]
+          toList +=  "@" +  assignees[i]['login'] + " "
+
+        return toList
+
       return {
         tweetAboutPullRequest: (reqBody) ->
           pr = reqBody.pull_request
@@ -74,17 +82,14 @@ module.exports = (robot) ->
 
         tweetAboutIssues: (reqBody) ->
           issue = reqBody.issue
-          assignees = issue["assignees"]
-          toList = ""
-          for i in [0..Object.keys(assignees).length]
-            toList +=  "@" +  assignees[i]['login'] + " "
-
+          console.log("===tweetAboutIssues===")
+          console.log(issue)
           message = (action) ->
             return () ->
               return  """
                       #{issue.url}
                       @#{issue.user.login}さんがIssueを#{action}。
-                      #{assignees}
+                      #{getTextToAssinees(issue)}
                       created_at: #{comment.created_at}
                       """
           return {
@@ -278,11 +283,10 @@ module.exports = (robot) ->
 
     #execute_obj_listで
     execute = (execute_event) ->
-      console.log("============execute start! with action : #{action}==============")
-      console.log(execute_event)
-
       action = config.action()
       data = config.req().body
+      console.log("============execute start! with action : #{action}==============")
+      console.log(execute_event)
 
       #eventGenerateの内部のemitEventが起動する
       emitEvent = execute_event.func
