@@ -60,7 +60,7 @@ module.exports = (robot) ->
           config = {
             actions: () ->
               return [
-                "assigned",
+                # "assigned",
                 "opened",
                 "closed",
               ]
@@ -119,7 +119,11 @@ module.exports = (robot) ->
               message = config.message(reqBody)
               return utils.getSetMessage(config, message)
           }
+
       }
+
+
+
 
     handler_utils = {
 
@@ -172,11 +176,8 @@ module.exports = (robot) ->
       list = []
       handler_list = imple_handler_obj()
       handler_list.__proto__.utils = handler_utils
-      console.log("==handler_list==")
-      console.log(handler_list)
 
       _.forEach(handler_list, (handle_func) ->
-        console.log(handle_func)
         handler = handle_func()
         set_event = setEvent(handler.event_name())(handler.execute)
         list.push(set_event)
