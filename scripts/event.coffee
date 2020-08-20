@@ -57,8 +57,20 @@ module.exports = (robot) ->
             }
 
         tweetAboutIssues: () ->
-          return {
 
+          message = (issue) ->
+            assignees = getAssinees(issue)
+
+            return (action) ->
+              return () ->
+                return  """
+                        #{issue.url}
+                        @#{issue.user.login}さんがIssueを#{action}。
+                        #{assignees}
+                        created_at: #{issue.created_at}
+                        """
+
+          return {
               event_name: () ->
                 return "issues"
 
@@ -68,18 +80,6 @@ module.exports = (robot) ->
                   "opened",
                   "closed",
                 ]
-
-              message: (issue) ->
-                assignees = getAssinees(issue)
-
-                return (action) ->
-                  return () ->
-                    return  """
-                            #{issue.url}
-                            @#{issue.user.login}さんがIssueを#{action}。
-                            #{assignees}
-                            created_at: #{issue.created_at}
-                            """
 
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
