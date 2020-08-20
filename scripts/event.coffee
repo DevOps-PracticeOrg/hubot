@@ -49,7 +49,7 @@ module.exports = (robot) ->
               return (action) ->
                 return () ->
                   return  """
-                          "#{pr.user.login}さんがPull Requestを#{action}",
+                          "<@#{pr.user.login}>さんがPull Requestを#{action}",
                           """
           }
 
@@ -78,7 +78,7 @@ module.exports = (robot) ->
                 return () ->
                   return  """
                           #{issue.url}
-                          <@#{issue.user.login}さんがIssueを#{action}。>
+                          <@#{issue.user.login}>さんがIssueを#{action}。
                           #{assignees}
                           """
             defaultMessage: () ->
@@ -114,8 +114,8 @@ module.exports = (robot) ->
                           Issueにコメントを#{action}
 
                           Issueタイトル：#{issue.title}
-                          Issue発行者：@#{issue.user.login}さん
-                          コメントした人：@#{comment.user.login}さん
+                          Issue発行者：<@#{issue.user.login}>さん
+                          コメントした人：<@#{comment.user.login}>さん
 
                           url: #{issue.html_url}
                           """
@@ -164,7 +164,7 @@ module.exports = (robot) ->
         assignees = list.assignees
         toList = ""
         _.forEach(assignees, (assignee) ->
-          toList += "<@" + assignee.login + "> "
+          toList += "<@#{assignee.login}> "
         )
 
         return toList
@@ -348,8 +348,20 @@ module.exports = (robot) ->
         roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
         console.log roomName
 
+        data = {
+          content: {
+            color: "00ff00",
+            fallback: "Sumally .....",
+            title: "Title....",
+            text: "Body .......",
+            mrkdwn_in: ["text"],
+          }
+          channel: roomName,
+          username: "bot_name",
+          icon_emoji: ":emoji:",
+        }
 
-        robot.messageRoom roomName, result
+        robot.messageRoom roomName, data
         res.status(201).send config.action()
       else
         res.status(200).send 'ok'
