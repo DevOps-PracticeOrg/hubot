@@ -20,8 +20,8 @@ module.exports = (robot) ->
       return {
           #RepoName: "RoomName list"
           App_Laravel7: ["githubnote"],
-          repoName1: ["かつおスライスの仕方", "叩き"],
-          repoName2: ["ツナ缶の作り方"],
+          repoName1: "かつおスライスの仕方"
+          repoName2: "ツナ缶の作り方",
       }
 
     #process.env.BOT_ADAPTERをキーとして取り出す
@@ -29,6 +29,7 @@ module.exports = (robot) ->
       return {
         SLACK: "#"
       }
+
     #================ please set paires of Event and Handler  =============================
 
     imple_handler_obj = () ->
