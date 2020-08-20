@@ -61,10 +61,14 @@ module.exports = (robot) ->
         size = Object.keys(assignees).length
 
         if size > 0
+
           for i in [0..size]
-            console.log("has login ....: #{assignees[i].hasOwnProperty('login')}")
-            console.log(assignees[i].login)
-            # toList += "@" + assignees[i].login + " "
+            name = "@" + assignees[i].login
+            console.log("===assine_name : #{name}===")
+            toList += name
+
+            if i < size
+              toList += " "
 
         return toList
 
@@ -90,6 +94,7 @@ module.exports = (robot) ->
           issue = reqBody.issue
           console.log("===tweetAboutIssues===")
           assignees = getTextToAssinees(issue)
+          console.log(assignees)
           message = (action) ->
             return () ->
               return  """
