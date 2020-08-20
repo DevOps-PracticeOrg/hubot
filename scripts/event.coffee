@@ -350,7 +350,7 @@ module.exports = (robot) ->
 
 
         robot.messageRoom roomName, result
-        res.status(201).reply config.action()
+        res.status(201).send config.action()
       else
         res.status(200).send 'ok'
 
