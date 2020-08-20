@@ -277,7 +277,6 @@ module.exports = (robot) ->
       console.log( execute_event_list[event])
 
       unless checkEvent?
-          err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
           return
       else
           return execute(execute_event_list[event])
@@ -355,6 +354,9 @@ module.exports = (robot) ->
       result = handleEvent(execute_event_list)
       console.log("============handleEvent show result==============")
       console.log(result)
+
+      if result == undefined
+        return
 
       if Object.keys(err_msg).length > 0
         sendErrorResponse()()
