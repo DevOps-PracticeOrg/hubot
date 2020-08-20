@@ -348,20 +348,7 @@ module.exports = (robot) ->
         roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
         console.log roomName
 
-        data = {
-          content: {
-            color: "00ff00",
-            fallback: "Sumally .....",
-            title: "Title....",
-            text: "Body .......",
-            mrkdwn_in: ["text"],
-          }
-          channel: roomName,
-          username: "bot_name",
-          icon_emoji: ":emoji:",
-        }
-
-        robot.messageRoom roomName, data
+        robot.messageRoom roomName, result
         res.status(201).send config.action()
       else
         res.status(200).send 'ok'
