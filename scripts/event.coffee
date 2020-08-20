@@ -186,7 +186,7 @@ module.exports = (robot) ->
       #   list.push(set_event)
 
 
-      handler = handler_list["tweetAboutIssues"]
+      handler = handler_list["tweetAboutIssues"]()
       console.log("==handler==")
       console.log(handler)
       set_event = setEvent(handler.event_name())(handler.execute)
