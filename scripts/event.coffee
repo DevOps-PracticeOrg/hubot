@@ -14,7 +14,7 @@ module.exports = (robot) ->
   robot.router.post GITHUB_LISTEN, (request, res) ->
 
     #================ 初期設定 =============================
-
+    err_msg = {}
     #実装済みイベント
     pull_request = "pull_request"
     issues = "issues"
@@ -62,7 +62,7 @@ module.exports = (robot) ->
 
         if size > 0
           for i in [0..Object.keys(assignees).length]
-            console.log(Object.keys(assignees[i]))
+            console.log(assignees[i]['login'])
             # toList +=  "@" +  assignees[i]['login'] + " "
 
         return toList
@@ -88,13 +88,13 @@ module.exports = (robot) ->
         tweetAboutIssues: (reqBody) ->
           issue = reqBody.issue
           console.log("===tweetAboutIssues===")
-
+          assignees = getTextToAssinees(issue)
           message = (action) ->
             return () ->
               return  """
                       #{issue.url}
                       @#{issue.user.login}さんがIssueを#{action}。
-                      #{getTextToAssinees(issue)}
+                      #{assignees}
                       created_at: #{issue.created_at}
                       """
           return {
@@ -166,13 +166,14 @@ module.exports = (robot) ->
             event_func = result[action]
 
             if event_func == undefined
-              sendErrorResponse("#{action}：対応するアクションが未定義です。")()
+              err_msg["no_action"] = "#{action}：対応するアクションが未定義です。"
               return
 
             try
               message = event_func()
             catch e
-              sendErrorResponse(e)()
+              err_msg["unexpexted"] = "予期せぬエラーが発生しました。"
+              return
 
           console.log("==== response message =====")
           console.log(message)
@@ -270,10 +271,6 @@ module.exports = (robot) ->
 
     handleEvent = (execute_event_list) ->
       console.log("============handleEvent start!==============")
-      resultObj = {
-          err_msg: {},
-          message: null,
-      }
 
       event = config.event_type()
       checkEvent = execute_event_list[event]
@@ -281,7 +278,8 @@ module.exports = (robot) ->
       console.log( execute_event_list[event])
 
       unless checkEvent?
-          return resultObj.err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
+          err_msg['no_event'] = "#{event}:このイベントへの対応はできません。"
+          return
       else
           return execute(execute_event_list[event])
           # return execute(execute_obj['issues'])
@@ -359,7 +357,10 @@ module.exports = (robot) ->
       console.log("============handleEvent show result==============")
       console.log(result)
 
-      sendResponse(result)
+      if Object.keys(err_msg).length == 0
+        sendResponse(result)
+
+      sendErrorResponse()()
 
     catch e
       sendErrorResponse(e)()
