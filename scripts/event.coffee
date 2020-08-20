@@ -178,13 +178,19 @@ module.exports = (robot) ->
       handler_list.__proto__.utils = handler_utils
       console.log("==handler_list==")
       console.log(handler_list)
-      for key, handler_func of handler_list
-        handler = handler_func()
-        console.log("==handler==")
-        console.log(handler)
-        set_event = setEvent(handler.event_name())(handler.execute)
-        list.push(set_event)
+      # for key, handler_func of handler_list
+      #   handler = handler_func()
+      #   console.log("==handler==")
+      #   console.log(handler)
+      #   set_event = setEvent(handler.event_name())(handler.execute)
+      #   list.push(set_event)
 
+
+      handler = handler_list["tweetAboutIssues"]
+      console.log("==handler==")
+      console.log(handler)
+      set_event = setEvent(handler.event_name())(handler.execute)
+      list.push(set_event)
       return list
 
     config = null
