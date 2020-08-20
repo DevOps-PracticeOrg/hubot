@@ -13,13 +13,6 @@ module.exports = (robot) ->
 
   robot.router.post GITHUB_LISTEN, (request, res) ->
 
-    #================ 初期設定 =============================
-    err_msg = {}
-    #実装済みイベント
-    pull_request = "pull_request"
-    issues = "issues"
-    issue_comment = "issue_comment"
-
     #================ please repos and chat rooms =============================
     #レポジトリネームからをRoomを取得したい。現時点で、レポジトリからチームリストを取得するAPIがうまく起動しないので妥協
 
@@ -37,27 +30,40 @@ module.exports = (robot) ->
       return {
 
         tweetAboutPullRequest: () ->
+
+          config = {
+            actions: () ->
+              return [
+                "opened",
+                "opened",
+              ]
+
+            message: (pr) ->
+              return (action) ->
+                return () ->
+                  return  """
+                          "#{pr.user.login}さんがPull Requestを#{action}",
+                          """
+          }
+
           return {
             event_name: () ->
               return "pull_request"
 
             execute: (reqBody) ->
-              pr = reqBody.pull_request
-
-              message = (action) ->
-                return () ->
-                  return  """
-                          "#{pr.user.login}さんがPull Requestを#{action}",
-                          """
-              return {
-                default: defaultMessage(),
-                opened: message("opened"),
-                closed: message("closed")
-              }
+              console.log("===tweetAboutPullRequest===")
+              message = config.message(reqBody.pull_request)
+              return utils.getSetMessage(config, message)
             }
 
         tweetAboutIssues: () ->
           config = {
+            actions: () ->
+              return [
+                "assigned",
+                "opened",
+                "closed",
+              ]
             message: (issue) ->
               assignees = utils.getAssinees(issue)
 
@@ -69,13 +75,6 @@ module.exports = (robot) ->
                           #{assignees}
                           created_at: #{issue.created_at}
                           """
-
-            actions: () ->
-              return [
-                "assigned",
-                "opened",
-                "closed",
-              ]
           }
 
           return {
@@ -89,16 +88,19 @@ module.exports = (robot) ->
             }
 
         tweetAboutIssueComments: () ->
-          return {
-            event_name: () ->
-              return "issue_comment"
 
-            execute: (reqBody) ->
+          config = {
+            actions: () ->
+              return [
+                "opened",
+                "created",
+              ]
 
+            message: (reqBody) ->
               issue = reqBody.issue
               comment = reqBody.comment
 
-              message = (action) ->
+              return (action) ->
                 return () ->
                   return  """
                           #{comment.user.login}さんがIssueコメントを#{action}。
@@ -106,10 +108,16 @@ module.exports = (robot) ->
                           url: #{issue.html_url}
                           created_at: #{comment.created_at}:
                           """
-              return {
-                  default: efaultMessage(),
-                  created: message("created")
-                }
+          }
+
+          return {
+            event_name: () ->
+              return "issue_comment"
+
+            execute: (reqBody) ->
+              console.log("===tweetAboutPullRequest===")
+              message = config.message(reqBody)
+              return utils.getSetMessage(config, message)
           }
       }
 
@@ -148,27 +156,6 @@ module.exports = (robot) ->
         return toList
     }
 
-    # dynamicExtend = (list) ->
-    #   defaultMessage = (func = null) ->
-    #     return () ->
-    #       unless func
-    #         return "default"
-    #       else
-    #         return func()
-
-    #   responseMessage = (func) ->
-    #     return func
-
-    #   return () ->
-    #     for i in [0..Object.keys(list).length]
-    #       if list[i].defaultMessage == undefined
-    #         list[i].prototype.defaultMessage = defaultMessage
-
-    #       if list[i].responseMessage == undefined
-    #         list[i].prototype.responseMessage = responseMessage
-
-    # dynamicExtend(imple_handler_obj)
-
     #================ Don't touch all below here==============================
 
     event_list = () ->
@@ -178,23 +165,18 @@ module.exports = (robot) ->
       handler_list.__proto__.utils = handler_utils
       console.log("==handler_list==")
       console.log(handler_list)
-      # for key, handler_func of handler_list
-      #   handler = handler_func()
-      #   console.log("==handler==")
-      #   console.log(handler)
-      #   set_event = setEvent(handler.event_name())(handler.execute)
-      #   list.push(set_event)
 
+      for key, handler_func of handler_list
+        handler = handler_func()
+        console.log("==handler==")
+        console.log(handler)
+        set_event = setEvent(handler.event_name())(handler.execute)
+        list.push(set_event)
 
-      handler = handler_list["tweetAboutIssues"]()
-      console.log("==handler==")
-      console.log(handler)
-      set_event = setEvent(handler.event_name())(handler.execute)
-      list.push(set_event)
       return list
 
     config = null
-
+    err_msg = {}
     #================ set execute_obj_list ==============================
     eventGenerate = () ->
       return (func) -> #setEvent内で呼ばれる。連想配列のvalueをラップするため
