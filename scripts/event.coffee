@@ -63,12 +63,7 @@ module.exports = (robot) ->
         if size > 0
           --size
           for i in [0..size]
-            name = "@" + assignees[i].login
-            console.log("===assine_name : #{name}===")
-            toList += name
-
-            if i < size
-              toList += " "
+            toList += "@" + assignees[i].login + " "
 
         return toList
 
