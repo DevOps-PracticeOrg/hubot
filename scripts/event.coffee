@@ -176,10 +176,10 @@ module.exports = (robot) ->
       list = []
       handler_list = imple_handler_obj()
       handler_list.__proto__.utils = handler_utils
-      size = Object.keys(handler_list).length
 
-      for i in [0..(--size)]
-        hanler = handler_list[i]()
+      for key, handler_func of handler_list
+        hanler = handler_func()
+        console.log(handler)
         setEvent(hanler.event_name())(hanler.execute)
         list.push(setEvent)
 
