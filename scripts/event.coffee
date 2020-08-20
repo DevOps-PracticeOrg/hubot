@@ -40,7 +40,8 @@ module.exports = (robot) ->
       handler = imple_handler_obj()
       return [
         setEvent(pull_request, [opened, closed])(handler.tweetAboutPullRequest),
-        setEvent(issues, [opened, closed, assigned])(handler.tweetAboutIssues)
+        # setEvent(issues, [opened, closed, assigned])(handler.tweetAboutIssues),
+        setEvent(issues)(handler.tweetAboutIssues),
         setEvent(issue_comment, created)(handler.tweetAboutIssueComments)
       ]
 
@@ -63,7 +64,7 @@ module.exports = (robot) ->
         if size > 0
           --size
           for i in [0..size]
-            toList += "@" + assignees[i].login + ": aaaaa"
+            toList += "@" + assignees[i].login + " "
 
         return toList
 
