@@ -18,6 +18,7 @@ module.exports = (robot) ->
 
     Rooms = () ->
       return {
+          #RepoName: "RoomName list"
           App_Laravel7: ["githubnote"],
           repoName1: ["かつおスライスの仕方", "叩き"],
           repoName2: ["ツナ缶の作り方"],
@@ -168,14 +169,13 @@ module.exports = (robot) ->
 
 
 
-
+    #================ Don't touch any sentences below==============================
     #=========================================================================
     #=========================================================================
     #=========================================================================
     #=========================================================================
     #=========================================================================
     #=========================================================================
-    #================ Don't touch all below here==============================
 
     event_list = () ->
 
@@ -337,11 +337,17 @@ module.exports = (robot) ->
 
     sendResponse = (result, pre_fix = "#") ->
       if result?
-        room = getRoom()
+        rooms = getRoom()
         console.log("============room==============")
-        roomName = pre_fix + room[0]
+        roomName = pre_fix + rooms[0]
+
+        targetRoom = _.map( rooms, (room) ->
+          pre_fix + room
+        )
+        console.log(targetRoom)
+
         console.log roomName
-        robot.messageRoom roomName, result
+        robot.messageRoom targetRoom, result
         res.status(201).send config.action()
       else
         res.status(200).send 'ok'
