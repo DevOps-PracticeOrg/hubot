@@ -64,6 +64,7 @@ module.exports = (robot) ->
             }
 
         tweetAboutIssues: () ->
+
           config = {
             actions: () ->
               return [
@@ -132,8 +133,6 @@ module.exports = (robot) ->
           }
 
       }
-
-
 
 
     handler_utils = {
