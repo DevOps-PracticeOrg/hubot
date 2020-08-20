@@ -78,7 +78,7 @@ module.exports = (robot) ->
                 return () ->
                   return  """
                           #{issue.url}
-                          @#{issue.user.login}さんがIssueを#{action}。
+                          <@#{issue.user.login}さんがIssueを#{action}。>
                           #{assignees}
                           """
             defaultMessage: () ->
@@ -164,7 +164,7 @@ module.exports = (robot) ->
         assignees = list.assignees
         toList = ""
         _.forEach(assignees, (assignee) ->
-          toList += "@" + assignee.login + " "
+          toList += "<@" + assignee.login + "> "
         )
 
         return toList
