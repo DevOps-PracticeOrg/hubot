@@ -180,8 +180,8 @@ module.exports = (robot) ->
       for key, handler_func of handler_list
         handler = handler_func()
         console.log(handler)
-        setEvent(handler.event_name())(handler.execute)
-        list.push(setEvent)
+        set_event = setEvent(handler.event_name())(handler.execute)
+        list.push(set_event)
 
       return list
 
