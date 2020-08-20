@@ -347,8 +347,10 @@ module.exports = (robot) ->
         console.log("============room==============")
         roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
         console.log roomName
+
+
         robot.messageRoom roomName, result
-        res.status(201).send config.action()
+        res.status(201).reply config.action()
       else
         res.status(200).send 'ok'
 
