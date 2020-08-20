@@ -178,9 +178,9 @@ module.exports = (robot) ->
       handler_list.__proto__.utils = handler_utils
 
       for key, handler_func of handler_list
-        hanler = handler_func()
+        handler = handler_func()
         console.log(handler)
-        setEvent(hanler.event_name())(hanler.execute)
+        setEvent(handler.event_name())(handler.execute)
         list.push(setEvent)
 
       return list
