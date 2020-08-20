@@ -24,6 +24,11 @@ module.exports = (robot) ->
           repoName2: ["ツナ缶の作り方"],
       }
 
+    #process.env.BOT_ADAPTERをキーとして取り出す
+    room_prefix = () ->
+      return {
+        SLACK: "#"
+      }
     #================ please set paires of Event and Handler  =============================
 
     imple_handler_obj = () ->
@@ -335,19 +340,13 @@ module.exports = (robot) ->
       repoName  = config.req().body.repository.name
       return rooms_list[repoName]
 
-    sendResponse = (result, pre_fix = "#") ->
+    sendResponse = (result) ->
       if result?
         rooms = getRoom()
         console.log("============room==============")
-        roomName = pre_fix + rooms[0]
-
-        targetRoom = _.map( rooms, (room) ->
-          pre_fix + room
-        )
-        console.log(targetRoom)
-
+        roomName = room_prefix()[process.env.BOT_ADAPTER] + room
         console.log roomName
-        robot.messageRoom targetRoom, result
+        robot.messageRoom roomName, result
         res.status(201).send config.action()
       else
         res.status(200).send 'ok'
