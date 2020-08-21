@@ -173,46 +173,48 @@ module.exports = (robot) ->
     #=========================================================================
     #=========================================================================
 
-    handler_default_utils = {
+    event_handler_default_utils = () ->
+      return {
+        partial: (func) ->
+          return (first) ->
+            return (second) ->
+              return func.call(null, first, second)
 
-      partial: (func) ->
-        return (first) ->
-          return (second) ->
-            return func.call(null, first, second)
+        defaultMessage: (func = null) ->
+          return () ->
+            unless func
+              return "default"
+            else
+              return func()
 
-      defaultMessage: (func = null) ->
-        return () ->
-          unless func
-            return "default"
+        setMessage: (message) ->
+          return () ->
+            return message
+
+        getSetMessage: (data, body) ->
+          message = this.partial(data.message)(body)
+          action_list = data.actions()
+
+          list = {}
+          _.forEach(action_list, (action_name) ->
+            list[action_name] = setMessage(message(action_name))
+          )
+
+          unless data.defaultMessage
+            list["default"] = this.defaultMessage()
           else
-            return func()
+            list["default"] = this.defaultMessage(data.defaultMessage)
 
-      setMessage: (message) ->
-        return () ->
-          return message
-
-      getSetMessage: (data, body) ->
-        message = this.partial(data.message)(body)
-        action_list = data.actions()
-
-        list = {}
-        _.forEach(action_list, (action_name) ->
-          list[action_name] = setMessage(message(action_name))
-        )
-
-        unless data.defaultMessage
-          list["default"] = this.defaultMessage()
-        else
-          list["default"] = this.defaultMessage(data.defaultMessage)
-
-        return list
-    }
+          return list
+      }
 
     event_list = () ->
 
       list = []
       handler_list = imple_handler_obj()
-      handler_list.__proto__.utils = _.concat(event_handler_utils(), handler_default_utils)
+      e_uti =  _.concat(event_handler_utils(), event_handler_default_utils())
+      console.log(e_uti)
+      handler_list.__proto__.utils = e_uti
 
       _.forEach(handler_list, (handle_func) ->
         handler = handle_func()
