@@ -197,7 +197,7 @@ module.exports = (robot) ->
 
           list = {}
           _.forEach(action_list, (action_name) ->
-            list[action_name] = setMessage(message(action_name))
+            list[action_name] = this.setMessage(message(action_name))
           )
 
           unless data.defaultMessage
@@ -217,9 +217,6 @@ module.exports = (robot) ->
       _.forEach(event_handler_utils(), (value, key) ->
         e_uti[key] = value
       )
-
-      console.log("====e_uti===")
-      console.log(e_uti)
       handler_list.__proto__.utils = e_uti
 
       _.forEach(handler_list, (handle_func) ->
