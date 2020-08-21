@@ -1,7 +1,7 @@
 # Kitty Hubot
 
 It is easy for you to add EventHanler on Webhook of GitHub.
-This hubot sends Messaage to specified room.
+This hubot sends a messaage to a specified room.
 
 ## set pairs of repogitory names and room names.
 
