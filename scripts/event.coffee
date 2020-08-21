@@ -29,6 +29,7 @@ module.exports = (robot) ->
       return {
         SLACK: "#"
       }
+     #================ please set paires of Event and Handler  =============================
 
     #================ please set paires of Event and Handler  =============================
 
@@ -38,19 +39,18 @@ module.exports = (robot) ->
 
         tweetAboutPullRequest: () ->
 
-          config = {
+          data = {
             actions: () ->
               return [
                 "opened",
                 "closed",
               ]
 
-            message: (pr) ->
-              return (action) ->
-                return () ->
-                  return  """
-                          "<@#{pr.user.login}>さんがPull Requestを#{action}",
-                          """
+            message: (pr, action) ->
+
+              return  """
+                      "<@#{pr.user.login}>さんがPull Requestを#{action}",
+                      """
           }
 
           return {
@@ -59,29 +59,27 @@ module.exports = (robot) ->
 
             execute: (reqBody) ->
               console.log("===tweetAboutPullRequest===")
-              message = config.message(reqBody.pull_request)
-              return utils.getSetMessage(config, message)
+              return utils.getSetMessage(data, reqBody.pull_request)
             }
 
         tweetAboutIssues: () ->
 
-          config = {
+          data = {
             actions: () ->
               return [
-                # "assigned",
                 "opened",
                 "closed",
               ]
-            message: (issue) ->
+
+            message: (issue, action) ->
               assignees = utils.getAssinees(issue)
 
-              return (action) ->
-                return () ->
-                  return  """
-                          #{issue.url}
-                          <@#{issue.user.login}>さんがIssueを#{action}。
-                          #{assignees}
-                          """
+              return  """
+                      #{issue.url}
+                      <@#{issue.user.login}>さんがIssueを#{action}。
+                      #{assignees}
+                      """
+
             defaultMessage: () ->
               return "default"
           }
@@ -92,34 +90,31 @@ module.exports = (robot) ->
 
               execute: (reqBody) ->
                 console.log("===tweetAboutIssues===")
-                message = config.message(reqBody.issue)
-                return utils.getSetMessage(config, message)
+                return utils.getSetMessage(data, reqBody.issue)
             }
 
         tweetAboutIssueComments: () ->
 
-          config = {
+          data = {
             actions: () ->
               return [
                 "opened",
                 "created",
               ]
 
-            message: (reqBody) ->
+            message: (reqBody, action) ->
               issue = reqBody.issue
               comment = reqBody.comment
 
-              return (action) ->
-                return () ->
-                  return  """
-                          Issueにコメントを#{action}
+              return  """
+                      Issueにコメントを#{action}
 
-                          Issueタイトル：#{issue.title}
-                          Issue発行者：<@#{issue.user.login}>さん
-                          コメントした人：<@#{comment.user.login}>さん
+                      Issueタイトル：#{issue.title}
+                      Issue発行者：<@#{issue.user.login}>さん
+                      コメントした人：<@#{comment.user.login}>さん
 
-                          url: #{issue.html_url}
-                          """
+                      url: #{issue.html_url}
+                      """
           }
 
           return {
@@ -128,50 +123,27 @@ module.exports = (robot) ->
 
             execute: (reqBody) ->
               console.log("===tweetAboutPullRequest===")
-              message = config.message(reqBody)
-              return utils.getSetMessage(config, message)
+              return utils.getSetMessage(data, reqBody)
           }
 
       }
 
+    event_handler_utils = () ->
+      return {
+        getAssinees: (list) ->
+          assignees = list.assignees
+          toList = ""
+          _.forEach(assignees, (assignee) ->
+            toList += "<@#{assignee.login}> "
+          )
 
-    handler_utils = {
-
-      defaultMessage: (func = null) ->
-        return () ->
-          unless func
-            return "default"
-          else
-            return func()
-
-      getSetMessage: (config, message) ->
-        action_list = config.actions()
-
-        list = {}
-        _.forEach(action_list, (action_name) ->
-          list[action_name] = message(action_name)
-        )
-
-        unless config.defaultMessage
-          list["default"] = this.defaultMessage()
-        else
-          list["default"] = this.defaultMessage(config.defaultMessage)
-
-        return list
-
-      getAssinees: (list) ->
-        assignees = list.assignees
-        toList = ""
-        _.forEach(assignees, (assignee) ->
-          toList += "<@#{assignee.login}> "
-        )
-
-        return toList
-    }
+          return toList
+      }
 
     #=========================================================================
     #特定のルームに送信可能
     #特定のルームの中の特定の人へメンションできない→どうすれば？
+
     sendResponse = (result) ->
       if result?
         rooms = getRoom()
@@ -201,11 +173,46 @@ module.exports = (robot) ->
     #=========================================================================
     #=========================================================================
 
+    handler_default_utils = {
+
+      partial: (func) ->
+        return (first) ->
+          return (second) ->
+            return func.call(null, first, second)
+
+      defaultMessage: (func = null) ->
+        return () ->
+          unless func
+            return "default"
+          else
+            return func()
+
+      setMessage: (message) ->
+        return () ->
+          return message
+
+      getSetMessage: (data, body) ->
+        message = this.partial(data.message)(body)
+        action_list = data.actions()
+
+        list = {}
+        _.forEach(action_list, (action_name) ->
+          list[action_name] = setMessage(message(action_name))
+        )
+
+        unless data.defaultMessage
+          list["default"] = this.defaultMessage()
+        else
+          list["default"] = this.defaultMessage(data.defaultMessage)
+
+        return list
+    }
+
     event_list = () ->
 
       list = []
       handler_list = imple_handler_obj()
-      handler_list.__proto__.utils = handler_utils
+      handler_list.__proto__.utils = _.concat(event_handler_utils(), handler_default_utils)
 
       _.forEach(handler_list, (handle_func) ->
         handler = handle_func()
