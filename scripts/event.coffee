@@ -213,6 +213,7 @@ module.exports = (robot) ->
       list = []
       handler_list = imple_handler_obj()
       e_uti =  _.concat(event_handler_utils(), event_handler_default_utils())
+      console.log("====e_uti===")
       console.log(e_uti)
       handler_list.__proto__.utils = e_uti
 
