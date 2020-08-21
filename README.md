@@ -16,59 +16,61 @@ Rooms = () ->
 ```
 
 ## set pairs of adapter and prefix.
-- a value of this paires is retrieved by process.env.BOT_ADAPTER
-
+- a value of this paires is retrieved by `process.env.BOT_ADAPTER`
+- You need set `process.env.BOT_ADAPTER`
 ```
 room_prefix = () ->
-  return {
+  obj = {
     SLACK: "#"
   }
+  return obj[process.env.BOT_ADAPTER]
 ```
 
 ## set Event Handlers.
+
+You can set event handlers.  
+Name of event handlers needs to be same as that of event in [GitHub Webhook](https://developer.github.com/webhooks/event-payloads/).  
+In a event handlers, You should that return function which executes `utils.getSetMessage`  
+`utils.getSetMessage` has two args.  
+The irst arg is `data` for config of a event handler.  
+The second arg is messag bady for the first arg of `data.message`.  
 
 - set config
   - actions : require 
   - message : requrire
   - defaultMessage : no require
 
-- set obj to return
-  - event_name : requrire
-  - execute : requrire
 
 ```
 imple_handler_obj = () ->
 
   return {
 
-    tweetAboutPullRequest: () ->
+    issues: () ->
 
-      config = {
+      data = {
         actions: () ->
           return [
             "opened",
             "closed",
           ]
 
-        message: (pr) ->
-          return (action) ->
-            return () ->
-              return  """
-                      "<@#{pr.user.login}>さんがPull Requestを#{action}",
-                      """
+        message: (issue, action) ->
+          assignees = utils.getAssinees(issue)
+
+          return  """
+                  #{issue.url}
+                  <@#{issue.user.login}>さんがIssueを#{action}。
+                  #{assignees}
+                  """
+
         defaultMessage: () ->
           return "default"
       }
 
-      return {
-        event_name: () ->
-          return "pull_request"
-
-        execute: (reqBody) ->
-          console.log("===tweetAboutPullRequest===")
-          message = config.message(reqBody.pull_request)
-          return utils.getSetMessage(config, message)
-        }
+      return (reqBody) ->
+            log("===tweetAboutIssues===")
+            return utils.getSetMessage(data, reqBody.issue)
 
   }
 ```
@@ -76,18 +78,20 @@ imple_handler_obj = () ->
 
 ## set Utils for Event Handlers.
 
-- You can add Utils for Event Handlers.
+- `event_handler_utils` can commonly be used in event handlers.
+- for example... `utils.getAssinees(list)`
 
 ```
-handler_utils = {
-  getAssinees: (list) ->
-    assignees = list.assignees
-    toList = ""
-    _.forEach(assignees, (assignee) ->
-      toList += "<@#{assignee.login}> "
-    )
+event_handler_utils = {
+  return {
+    getAssinees: (list) ->
+      assignees = list.assignees
+      toList = ""
+      _.forEach(assignees, (assignee) ->
+        toList += "<@#{assignee.login}> "
+      )
 
-    return toList
+      return toList
 }
 ```
 - Event Hanlers has Utils as __proto__
@@ -99,8 +103,8 @@ utils.getAssinees(issue)
 
 ## Response
 
-Response ligic is not completed yet.
-- Now, Kitty can't mention a person in a room.
+Response logic is not completed yet.  
+`Now, Kitty can't mention a person in a room.`
 
 ```
 sendResponse = (result) ->

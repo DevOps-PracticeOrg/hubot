@@ -35,15 +35,20 @@ module.exports = (robot) ->
           repoName2: "ツナ缶の作り方",
       }
 
-    #process.env.BOT_ADAPTERをキーとして取り出す
+    #plz, set process.env.BOT_ADAPTER
     room_prefix = () ->
-      return {
+      obj = {
         SLACK: "#"
       }
-     #================ please set paires of Event and Handler  =============================
+      return obj[process.env.BOT_ADAPTER]
 
     #================ please set paires of Event and Handler  =============================
-
+    # You can set event handlers.
+    # name of event handlers needs to be same as that of event in GitHub Webhook
+    # In a event handlers, You should that return function which executes `utils.getSetMessage`
+    # `utils.getSetMessage` has two args.
+    # The irst arg is `data` for config of a event handler.
+    # The second arg is messag bady for the first arg of `data.message`.
     imple_handler_obj = () ->
 
       return {
@@ -124,6 +129,8 @@ module.exports = (robot) ->
               return utils.getSetMessage(data, reqBody)
       }
 
+    # `event_handler_utils` can commonly be used in event handlers.
+    # for example... `utils.getAssinees(list)`
     event_handler_utils = () ->
       return {
         getAssinees: (list) ->
@@ -144,7 +151,7 @@ module.exports = (robot) ->
       if result?
         rooms = getRoom()
         log("============room==============")
-        roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
+        roomName = room_prefix() + rooms
         log roomName
 
         robot.messageRoom roomName, result
