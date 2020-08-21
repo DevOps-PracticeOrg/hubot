@@ -1,17 +1,24 @@
 # Description:
 # GitHub Webhookのエンドポイント
 #
-# Notes:
 crypto = require 'crypto'
 _ = require 'lodash'
+
+#===================初期設定==================
 ORG = if process.env.HUBOT_GITHUB_ORG then process.env.HUBOT_GITHUB_ORG else null
 unless ORG
   return
 GITHUB_LISTEN = "/github/#{ORG}"
 
+
 log = (text) ->
   if process.env.DISPLAY_LOG == true
     console.log text
+#===========================================
+
+
+
+
 
 module.exports = (robot) ->
 
@@ -50,7 +57,7 @@ module.exports = (robot) ->
                 "closed",
               ]
 
-            message: (pr, action) ->
+            message: (pull_request, action) ->
 
               return  """
                       "<@#{pr.user.login}>さんがPull Requestを#{action}",
@@ -205,7 +212,7 @@ module.exports = (robot) ->
       )
 
       handler_list.__proto__.utils = e_uti
-      console.log(handler_list)
+      log(handler_list)
 
       _.forEach(handler_list, (value, key) ->
         handler = value()

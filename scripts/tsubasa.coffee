@@ -5,3 +5,6 @@ module.exports = (robot) ->
   robot.hear(/付き合って/i, (res) ->
     res.reply("ごめんさない。私は皆んなのアイドルなの・・・")
   )
+  robot.hear(/env/i, (res) ->
+    res.reply(process.env)
+  )
