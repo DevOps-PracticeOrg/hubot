@@ -10,7 +10,7 @@ unless ORG
 GITHUB_LISTEN = "/github/#{ORG}"
 
 log = (text) ->
-  if DISPLAY_LOG == true
+  if process.env.DISPLAY_LOG == true
     console.log text
 
 module.exports = (robot) ->
