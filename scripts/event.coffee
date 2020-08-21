@@ -41,7 +41,7 @@ module.exports = (robot) ->
 
       return {
 
-        tweetAboutPullRequest: () ->
+        pull_request: () ->
 
           data = {
             actions: () ->
@@ -58,15 +58,12 @@ module.exports = (robot) ->
           }
 
           return {
-            event_name: () ->
-              return "pull_request"
-
             execute: (reqBody) ->
               log("===tweetAboutPullRequest===")
               return utils.getSetMessage(data, reqBody.pull_request)
             }
 
-        tweetAboutIssues: () ->
+        issues: () ->
 
           data = {
             actions: () ->
@@ -89,17 +86,15 @@ module.exports = (robot) ->
           }
 
           return {
-              event_name: () ->
-                return "issues"
-
               execute: (reqBody) ->
                 log("===tweetAboutIssues===")
                 return utils.getSetMessage(data, reqBody.issue)
             }
 
-        tweetAboutIssueComments: () ->
+        issue_comment: () ->
 
           data = {
+
             actions: () ->
               return [
                 "opened",
@@ -122,9 +117,6 @@ module.exports = (robot) ->
           }
 
           return {
-            event_name: () ->
-              return "issue_comment"
-
             execute: (reqBody) ->
               log("===tweetAboutPullRequest===")
               return utils.getSetMessage(data, reqBody)
@@ -219,10 +211,11 @@ module.exports = (robot) ->
         e_uti[key] = value
       )
       handler_list.__proto__.utils = e_uti
+      console.log(handler_list)
 
       _.forEach(handler_list, (handle_func) ->
         handler = handle_func()
-        set_event = setEvent(handler.event_name())(handler.execute)
+        set_event = setEvent(handler)(handler.execute)
         list.push(set_event)
       )
 
