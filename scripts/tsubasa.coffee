@@ -6,5 +6,6 @@ module.exports = (robot) ->
     res.reply("ごめんさない。私は皆んなのアイドルなの・・・")
   )
   robot.hear(/env/i, (res) ->
+    console.log(process.env)
     res.reply(process.env)
   )
