@@ -9,6 +9,10 @@ unless ORG
   return
 GITHUB_LISTEN = "/github/#{ORG}"
 
+log = (text) ->
+  if DISPLAY_LOG == true
+    console.log text
+
 module.exports = (robot) ->
 
   robot.router.post GITHUB_LISTEN, (request, res) ->
@@ -58,7 +62,7 @@ module.exports = (robot) ->
               return "pull_request"
 
             execute: (reqBody) ->
-              console.log("===tweetAboutPullRequest===")
+              log("===tweetAboutPullRequest===")
               return utils.getSetMessage(data, reqBody.pull_request)
             }
 
@@ -89,7 +93,7 @@ module.exports = (robot) ->
                 return "issues"
 
               execute: (reqBody) ->
-                console.log("===tweetAboutIssues===")
+                log("===tweetAboutIssues===")
                 return utils.getSetMessage(data, reqBody.issue)
             }
 
@@ -122,7 +126,7 @@ module.exports = (robot) ->
               return "issue_comment"
 
             execute: (reqBody) ->
-              console.log("===tweetAboutPullRequest===")
+              log("===tweetAboutPullRequest===")
               return utils.getSetMessage(data, reqBody)
           }
 
@@ -147,9 +151,9 @@ module.exports = (robot) ->
     sendResponse = (result) ->
       if result?
         rooms = getRoom()
-        console.log("============room==============")
+        log("============room==============")
         roomName = room_prefix()[process.env.BOT_ADAPTER] + rooms
-        console.log roomName
+        log roomName
 
         robot.messageRoom roomName, result
         res.status(201).send config.action()
@@ -157,7 +161,7 @@ module.exports = (robot) ->
         res.status(200).send 'ok'
 
     sendErrorResponse = (e = null) ->
-      console.log e
+      log e
       return (func = null) ->
         unless func
           res.status(400).send "エラーです"
@@ -234,10 +238,10 @@ module.exports = (robot) ->
         return emitEvent = (data, action = null) -> #実行時にdataを渡したいから、dataはここ。dataはconfig.req()を想定
           result_message = func(data) #imple_handler_objの中身を実行
 
-          console.log("==== emitEvent result =====")
-          console.log(result)
-          console.log("==== emitEvent action =====")
-          console.log(action)
+          log("==== emitEvent result =====")
+          log(result)
+          log("==== emitEvent action =====")
+          log(action)
           message = null
 
           unless action?
@@ -338,12 +342,12 @@ module.exports = (robot) ->
 
 
     handleEvent = (execute_event_list) ->
-      console.log("============handleEvent start!==============")
+      log("============handleEvent start!==============")
 
       event = config.event_type()
       checkEvent = execute_event_list[event]
-      console.log("============event==============")
-      console.log( execute_event_list[event])
+      log("============event==============")
+      log( execute_event_list[event])
 
       unless checkEvent?
           return
@@ -354,8 +358,8 @@ module.exports = (robot) ->
     execute = (execute_event) ->
       action = config.action()
       data = config.req().body
-      console.log("============execute start! with action : #{action}==============")
-      console.log(execute_event)
+      log("============execute start! with action : #{action}==============")
+      log(execute_event)
 
       #eventGenerateの内部のemitEventが起動する
       emitEvent = execute_event.func
@@ -363,31 +367,32 @@ module.exports = (robot) ->
 
     getRoom = () ->
       rooms_list = Rooms()
-      console.log "=== rooms_list ==="
-      console.log rooms_list
+      log "=== rooms_list ==="
+      log rooms_list
       repoName  = config.req().body.repository.name
       return rooms_list[repoName]
 
     #================ main logic ==============================
     try
-      console.log "========Main stand up!========="
+
+      log "========Main stand up!========="
       config = init(request)
       Object.freeze(config)
 
       # checkAuth = true
       checkAuth = isCorrectSignature config
 
-      console.log("============checkAuth #{checkAuth}==============")
+      log("============checkAuth #{checkAuth}==============")
       unless checkAuth?
           res.status(401).send 'unauthorized'
           return
 
-      console.log("============execute_obj_list start!==============")
+      log("============execute_obj_list start!==============")
       execute_event_list = execute_obj_list(createExecuteObjlist)
-      console.log(execute_event_list)
+      log(execute_event_list)
       result = handleEvent(execute_event_list)
-      console.log("============handleEvent show result==============")
-      console.log(result)
+      log("============handleEvent show result==============")
+      log(result)
 
       if result == undefined
         return
