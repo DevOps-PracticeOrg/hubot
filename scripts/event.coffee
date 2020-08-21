@@ -192,12 +192,13 @@ module.exports = (robot) ->
             return message
 
         getSetMessage: (data, body) ->
-          message = this.partial(data.message)(body)
+          partial_message = this.partial(data.message)(body)
           action_list = data.actions()
 
           list = {}
           _.forEach(action_list, (action_name) ->
-            list[action_name] = this.setMessage(message(action_name))
+            list[action_name] = () ->
+              return partial_message(action_name)
           )
 
           unless data.defaultMessage
