@@ -30,7 +30,7 @@ room_prefix = () ->
 
 You can set event handlers.  
 Name of event handlers needs to be same as that of event in [GitHub Webhook](https://developer.github.com/webhooks/event-payloads/).  
-In a event handlers, You should that return function which executes `utils.getSetMessage`  
+In a event handlers, You should return the function which executes `utils.getSetMessage`  
 `utils.getSetMessage` has two args.  
 The irst arg is `data` for config of a event handler.  
 The second arg is messag bady for the first arg of `data.message`.  
