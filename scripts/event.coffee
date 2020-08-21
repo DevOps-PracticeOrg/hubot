@@ -346,14 +346,14 @@ module.exports = (robot) ->
       log("============handleEvent start!==============")
 
       event = config.event_type()
-      checkEvent = execute_event_list[event]
+      execute_event = execute_event_list[event]
       log("============event==============")
-      log( execute_event_list[event])
+      log( execute_event)
 
-      unless checkEvent?
+      unless execute_event?
           return
       else
-          return execute(execute_event_list[event])#ここ！
+          return execute(execute_event)#ここ！
 
     #execute_obj_listで
     execute = (execute_event) ->
@@ -378,7 +378,6 @@ module.exports = (robot) ->
 
       log "========Main stand up!========="
       config = init(request)
-      Object.freeze(config)
 
       # checkAuth = true
       checkAuth = isCorrectSignature config

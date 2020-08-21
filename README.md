@@ -94,12 +94,6 @@ event_handler_utils = {
       return toList
 }
 ```
-- Event Hanlers has Utils as __proto__
-
-```
-# in Each of Event Handlers
-utils.getAssinees(issue)
-```
 
 ## Response
 
