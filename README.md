@@ -104,7 +104,7 @@ utils.getAssinees(issue)
 ## Response
 
 Response logic is not completed yet.  
-`Now, Kitty can't mention a person in a room.`
+`Now, Kitty can't specify(mention to) a person in a room.`
 
 ```
 sendResponse = (result) ->
