@@ -187,10 +187,6 @@ module.exports = (robot) ->
             else
               return func()
 
-        setMessage: (message) ->
-          return () ->
-            return message
-
         getSetMessage: (data, body) ->
           partial_message = this.partial(data.message)(body)
           action_list = data.actions()
